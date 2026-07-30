@@ -507,7 +507,6 @@ const SEED_UNIT_MASUK = [{"no": 1.0, "customer": "PT Nenggapratama Internusa ", 
    ========================================================= */
 let state = { masterBarang: [], unitMasuk: [], barangMasuk: [], barangKeluar: [] };
 
-<script>
 window.storage = {
   async get(key) {
     const value = localStorage.getItem(key);
@@ -529,7 +528,6 @@ window.storage = {
     return true;
   }
 };
-</script>
 
 async function loadState(){
   try{
