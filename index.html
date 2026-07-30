@@ -1,1 +1,910 @@
-Halo
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SIGUDANG — Sistem Gudang</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #0F1419;
+    --surface: #171D26;
+    --surface-2: #1E2630;
+    --surface-3: #242E3A;
+    --border: #2B3441;
+    --text: #E7ECF2;
+    --text-muted: #8FA0B3;
+    --text-dim: #5C6B7D;
+    --amber: #F2A93B;
+    --amber-dim: #4A3A1E;
+    --green: #3FBF7F;
+    --green-dim: #163826;
+    --red: #E5555A;
+    --red-dim: #3A1E20;
+    --blue: #4C8DFF;
+    --blue-dim: #1A2740;
+    --radius: 10px;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Inter', sans-serif;
+    font-size:14px;
+    -webkit-font-smoothing:antialiased;
+  }
+  .app{ display:flex; min-height:100vh; }
+
+  /* ---------- Sidebar ---------- */
+  .sidebar{
+    width:236px; flex-shrink:0;
+    background:var(--surface);
+    border-right:1px solid var(--border);
+    display:flex; flex-direction:column;
+    position:sticky; top:0; height:100vh;
+  }
+  .brand{
+    padding:22px 20px 18px;
+    border-bottom:1px solid var(--border);
+  }
+  .brand-mark{
+    font-family:'Space Grotesk', sans-serif;
+    font-weight:700; font-size:18px; letter-spacing:0.5px;
+    color:var(--text); display:flex; align-items:center; gap:9px;
+  }
+  .brand-mark .dot{ width:9px; height:9px; border-radius:2px; background:var(--amber); transform:rotate(45deg); flex-shrink:0; }
+  .brand-sub{ font-size:11px; color:var(--text-dim); margin-top:4px; letter-spacing:0.3px; }
+
+  nav{ padding:14px 12px; flex:1; overflow-y:auto; }
+  .nav-label{
+    font-size:10.5px; text-transform:uppercase; letter-spacing:1px;
+    color:var(--text-dim); padding:14px 10px 6px;
+  }
+  .nav-item{
+    display:flex; align-items:center; gap:10px;
+    padding:9px 10px; border-radius:8px; cursor:pointer;
+    color:var(--text-muted); font-size:13.5px; font-weight:500;
+    margin-bottom:2px; transition:background .12s, color .12s;
+    border:1px solid transparent;
+  }
+  .nav-item:hover{ background:var(--surface-2); color:var(--text); }
+  .nav-item.active{ background:var(--surface-2); color:var(--amber); border-color:var(--border); }
+  .nav-item .ic{ width:16px; height:16px; flex-shrink:0; display:flex; align-items:center; justify-content:center; }
+  .nav-item svg{ width:16px; height:16px; stroke:currentColor; fill:none; stroke-width:1.8; }
+  .nav-badge{
+    margin-left:auto; font-family:'JetBrains Mono', monospace; font-size:10.5px;
+    background:var(--red-dim); color:var(--red); padding:1px 6px; border-radius:20px; font-weight:600;
+  }
+
+  .sidebar-foot{ padding:14px 20px; border-top:1px solid var(--border); font-size:11px; color:var(--text-dim); }
+
+  /* ---------- Main ---------- */
+  main{ flex:1; min-width:0; }
+  .topbar{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:20px 32px; border-bottom:1px solid var(--border);
+    position:sticky; top:0; background:rgba(15,20,25,0.92); backdrop-filter:blur(6px); z-index:5;
+  }
+  .topbar h1{ font-family:'Space Grotesk', sans-serif; font-size:20px; font-weight:600; }
+  .topbar .desc{ font-size:12.5px; color:var(--text-dim); margin-top:3px; }
+  .topbar-right{ display:flex; align-items:center; gap:14px; }
+  .today{ font-size:12px; color:var(--text-muted); font-family:'JetBrains Mono',monospace; }
+
+  .page{ display:none; padding:28px 32px 60px; animation:fade .18s ease; }
+  .page.active{ display:block; }
+  @keyframes fade{ from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:translateY(0);} }
+
+  /* ---------- Common bits ---------- */
+  .btn{
+    font-family:'Inter',sans-serif; font-weight:600; font-size:13px;
+    padding:9px 16px; border-radius:8px; border:1px solid var(--border);
+    background:var(--surface-2); color:var(--text); cursor:pointer;
+    display:inline-flex; align-items:center; gap:7px; transition:.12s;
+  }
+  .btn:hover{ background:var(--surface-3); }
+  .btn-primary{ background:var(--amber); color:#1A1206; border-color:var(--amber); }
+  .btn-primary:hover{ background:#ffbb52; }
+  .btn-in{ background:var(--blue-dim); border-color:#294a85; color:#8fb4ff; }
+  .btn-out{ background:var(--amber-dim); border-color:#6b4f1c; color:var(--amber); }
+
+  .plate{
+    font-family:'JetBrains Mono', monospace; font-weight:700; font-size:12px;
+    border:1.5px solid var(--amber); color:var(--amber); background:var(--amber-dim);
+    padding:3px 9px; border-radius:5px; letter-spacing:0.5px; display:inline-block; white-space:nowrap;
+  }
+  .badge{ font-size:11px; font-weight:600; padding:3px 9px; border-radius:20px; display:inline-block; }
+  .badge-aman{ background:var(--green-dim); color:var(--green); }
+  .badge-pesan{ background:var(--red-dim); color:var(--red); }
+  .badge-di-gudang{ background:var(--blue-dim); color:var(--blue); }
+  .badge-keluar{ background:var(--surface-3); color:var(--text-muted); }
+
+  .stat-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:26px; }
+  .stat-card{
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+    padding:18px 18px 16px; position:relative; overflow:hidden;
+  }
+  .stat-card .num{ font-family:'Space Grotesk',sans-serif; font-size:28px; font-weight:700; }
+  .stat-card .lbl{ font-size:12px; color:var(--text-muted); margin-top:4px; }
+  .stat-card .accent{ position:absolute; top:0; left:0; width:3px; height:100%; }
+
+  .panel{
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+    margin-bottom:20px; overflow:hidden;
+  }
+  .panel-head{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 18px; border-bottom:1px solid var(--border);
+  }
+  .panel-head h3{ font-family:'Space Grotesk',sans-serif; font-size:14.5px; font-weight:600; }
+  .panel-head .sub{ font-size:11.5px; color:var(--text-dim); margin-top:2px; }
+  .panel-body{ padding:6px 0; }
+
+  table{ width:100%; border-collapse:collapse; font-size:13px; }
+  th{
+    text-align:left; font-size:10.5px; text-transform:uppercase; letter-spacing:0.6px;
+    color:var(--text-dim); padding:10px 18px; border-bottom:1px solid var(--border); font-weight:600;
+  }
+  td{ padding:10px 18px; border-bottom:1px solid var(--border); color:var(--text); vertical-align:middle; }
+  tbody tr:hover{ background:var(--surface-2); }
+  tbody tr:last-child td{ border-bottom:none; }
+  .muted{ color:var(--text-dim); }
+  .mono{ font-family:'JetBrains Mono',monospace; }
+  .right{ text-align:right; }
+  .empty-row td{ text-align:center; color:var(--text-dim); padding:26px; }
+
+  .two-col{ display:grid; grid-template-columns:1.3fr 1fr; gap:20px; align-items:start; }
+
+  /* forms */
+  .form-grid{ display:grid; grid-template-columns:1fr 1fr; gap:14px; padding:18px; }
+  .form-grid.full{ grid-template-columns:1fr; }
+  .field{ display:flex; flex-direction:column; gap:6px; }
+  .field.span2{ grid-column:1 / -1; }
+  .field label{ font-size:11.5px; color:var(--text-muted); font-weight:600; letter-spacing:0.2px; }
+  .field input, .field select, .field textarea{
+    background:var(--surface-2); border:1px solid var(--border); color:var(--text);
+    padding:9px 11px; border-radius:7px; font-family:'Inter',sans-serif; font-size:13.5px; outline:none;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus{ border-color:var(--amber); }
+  .field .hint{ font-size:11px; color:var(--text-dim); }
+  .form-actions{ display:flex; justify-content:flex-end; gap:10px; padding:14px 18px; border-top:1px solid var(--border); }
+
+  .search-bar{ display:flex; gap:10px; padding:14px 18px; border-bottom:1px solid var(--border); flex-wrap:wrap; }
+  .search-bar input, .search-bar select{
+    background:var(--surface-2); border:1px solid var(--border); color:var(--text);
+    padding:8px 12px; border-radius:7px; font-size:13px; outline:none;
+  }
+  .search-bar input:focus, .search-bar select:focus{ border-color:var(--amber); }
+  .search-bar input{ flex:1; min-width:180px; }
+
+  .toast{
+    position:fixed; bottom:24px; right:24px; background:var(--surface-3);
+    border:1px solid var(--border); border-left:3px solid var(--green);
+    padding:13px 18px; border-radius:8px; font-size:13px; box-shadow:0 8px 24px rgba(0,0,0,0.4);
+    display:none; align-items:center; gap:10px; z-index:100; max-width:340px;
+  }
+  .toast.err{ border-left-color:var(--red); }
+  .toast.show{ display:flex; animation:slideup .2s ease; }
+  @keyframes slideup{ from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:translateY(0);} }
+
+  ::-webkit-scrollbar{ width:9px; height:9px; }
+  ::-webkit-scrollbar-thumb{ background:var(--surface-3); border-radius:20px; }
+  ::-webkit-scrollbar-track{ background:transparent; }
+
+  .loading-wrap{ display:flex; align-items:center; justify-content:center; height:100vh; width:100%; color:var(--text-dim); font-family:'JetBrains Mono',monospace; font-size:13px; }
+
+  @media (max-width: 900px){
+    .stat-grid{ grid-template-columns:repeat(2,1fr); }
+    .two-col{ grid-template-columns:1fr; }
+    .form-grid{ grid-template-columns:1fr; }
+    .sidebar{ position:fixed; z-index:50; transform:translateX(-100%); transition:.2s; }
+    .sidebar.open{ transform:translateX(0); }
+  }
+</style>
+</head>
+<body>
+
+<div id="loading" class="loading-wrap">Memuat data gudang…</div>
+
+<div class="app" id="app" style="display:none;">
+  <!-- SIDEBAR -->
+  <div class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="brand-mark"><span class="dot"></span>SIGUDANG</div>
+      <div class="brand-sub">Sistem Informasi Gudang</div>
+    </div>
+    <nav>
+      <div class="nav-label">Ringkasan</div>
+      <div class="nav-item active" data-page="dashboard">
+        <span class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg></span>
+        Dashboard
+      </div>
+      <div class="nav-label">Transaksi</div>
+      <div class="nav-item" data-page="masuk">
+        <span class="ic"><svg viewBox="0 0 24 24"><path d="M12 3v12M6 11l6 6 6-6M4 21h16"/></svg></span>
+        Input Barang Masuk
+      </div>
+      <div class="nav-item" data-page="keluar">
+        <span class="ic"><svg viewBox="0 0 24 24"><path d="M12 21V9M6 13l6-6 6 6M4 3h16"/></svg></span>
+        Input Barang Keluar
+      </div>
+      <div class="nav-label">Data Master</div>
+      <div class="nav-item" data-page="unit">
+        <span class="ic"><svg viewBox="0 0 24 24"><rect x="2" y="8" width="15" height="9" rx="1.5"/><path d="M17 11h3l2 3v3h-5"/><circle cx="7" cy="18.5" r="1.6"/><circle cx="17.5" cy="18.5" r="1.6"/></svg></span>
+        Unit Masuk (Nomor NB)
+      </div>
+      <div class="nav-item" data-page="barang">
+        <span class="ic"><svg viewBox="0 0 24 24"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8M12 13v8"/></svg></span>
+        Master Barang
+      </div>
+      <div class="nav-item" data-page="pesan">
+        <span class="ic"><svg viewBox="0 0 24 24"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9L2.7 18a1.8 1.8 0 001.5 2.7h15.6a1.8 1.8 0 001.5-2.7L13.7 3.9a1.8 1.8 0 00-3.4 0z"/></svg></span>
+        Perlu Dipesan
+        <span class="nav-badge" id="navPesanBadge">0</span>
+      </div>
+    </nav>
+    <div class="sidebar-foot">Data tersimpan &amp; dibagikan untuk seluruh tim gudang.</div>
+  </div>
+
+  <!-- MAIN -->
+  <main>
+    <div class="topbar">
+      <div>
+        <h1 id="pageTitle">Dashboard</h1>
+        <div class="desc" id="pageDesc">Ringkasan kondisi gudang hari ini</div>
+      </div>
+      <div class="topbar-right">
+        <div class="today" id="todayDate"></div>
+      </div>
+    </div>
+
+    <!-- ===================== DASHBOARD ===================== -->
+    <div class="page active" id="page-dashboard">
+      <div class="stat-grid">
+        <div class="stat-card"><div class="accent" style="background:var(--amber)"></div>
+          <div class="num" id="statTotalItem">0</div><div class="lbl">Total jenis barang</div></div>
+        <div class="stat-card"><div class="accent" style="background:var(--red)"></div>
+          <div class="num" id="statPesan">0</div><div class="lbl">Perlu dipesan ulang</div></div>
+        <div class="stat-card"><div class="accent" style="background:var(--blue)"></div>
+          <div class="num" id="statUnitAktif">0</div><div class="lbl">Unit masih di gudang</div></div>
+        <div class="stat-card"><div class="accent" style="background:var(--green)"></div>
+          <div class="num" id="statTransaksiBulan">0</div><div class="lbl">Transaksi bulan ini</div></div>
+      </div>
+
+      <div class="two-col">
+        <div class="panel">
+          <div class="panel-head">
+            <div><h3>Aktivitas Terbaru</h3><div class="sub">Gabungan barang masuk &amp; keluar</div></div>
+          </div>
+          <div class="panel-body">
+            <table>
+              <thead><tr><th>Tanggal</th><th>Jenis</th><th>Barang</th><th>Qty</th><th>Keterangan</th></tr></thead>
+              <tbody id="tblAktivitas"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-head">
+            <div><h3>Perlu Dipesan</h3><div class="sub">Stok di bawah batas aman</div></div>
+          </div>
+          <div class="panel-body">
+            <table>
+              <thead><tr><th>Barang</th><th class="right">Stok</th></tr></thead>
+              <tbody id="tblPesanRingkas"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===================== INPUT BARANG MASUK ===================== -->
+    <div class="page" id="page-masuk">
+      <div class="panel">
+        <div class="panel-head">
+          <div><h3>Form Barang Masuk</h3><div class="sub">Catat penerimaan barang ke gudang</div></div>
+        </div>
+        <form id="formMasuk" class="form-grid">
+          <div class="field">
+            <label>Tanggal</label>
+            <input type="date" id="mTanggal" required>
+          </div>
+          <div class="field">
+            <label>Kode Barang</label>
+            <select id="mKode" required></select>
+          </div>
+          <div class="field span2">
+            <label>Nama Barang</label>
+            <input type="text" id="mNama" disabled>
+          </div>
+          <div class="field">
+            <label>Qty Masuk</label>
+            <input type="number" id="mQty" min="0.01" step="any" required placeholder="0">
+          </div>
+          <div class="field">
+            <label>Satuan</label>
+            <input type="text" id="mSatuan" disabled>
+          </div>
+          <div class="field span2">
+            <label>Keterangan (opsional)</label>
+            <input type="text" id="mKet" placeholder="mis. dari supplier X / PO-123">
+          </div>
+          <div class="field span2 hint" id="mStokPreview"></div>
+        </form>
+        <div class="form-actions">
+          <button class="btn" type="button" onclick="resetMasukForm()">Bersihkan</button>
+          <button class="btn btn-in" type="submit" form="formMasuk">↓ Simpan Barang Masuk</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <div><h3>Riwayat Barang Masuk</h3><div class="sub" id="masukCount">0 transaksi</div></div>
+        </div>
+        <div class="search-bar">
+          <input type="text" id="searchMasuk" placeholder="Cari kode / nama barang…">
+        </div>
+        <div class="panel-body">
+          <table>
+            <thead><tr><th>Tanggal</th><th>Kode</th><th>Nama Barang</th><th class="right">Qty Masuk</th><th>Satuan</th><th>Keterangan</th></tr></thead>
+            <tbody id="tblMasuk"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===================== INPUT BARANG KELUAR ===================== -->
+    <div class="page" id="page-keluar">
+      <div class="panel">
+        <div class="panel-head">
+          <div><h3>Form Barang Keluar</h3><div class="sub">Wajib dikaitkan dengan Nomor NB unit yang ada di gudang</div></div>
+        </div>
+        <form id="formKeluar" class="form-grid">
+          <div class="field">
+            <label>Tanggal</label>
+            <input type="date" id="kTanggal" required>
+          </div>
+          <div class="field">
+            <label>Kode Barang</label>
+            <select id="kKode" required></select>
+          </div>
+          <div class="field span2">
+            <label>Nama Barang</label>
+            <input type="text" id="kNama" disabled>
+          </div>
+          <div class="field">
+            <label>Qty Keluar</label>
+            <input type="number" id="kQty" min="0.01" step="any" required placeholder="0">
+          </div>
+          <div class="field">
+            <label>Stok Tersedia</label>
+            <input type="text" id="kStokTersedia" disabled>
+          </div>
+          <div class="field">
+            <label>Diambil Oleh</label>
+            <input type="text" id="kDiambil" required placeholder="Nama karyawan">
+          </div>
+          <div class="field">
+            <label>Divisi</label>
+            <input type="text" id="kDivisi" required placeholder="mis. Electrical, Painting">
+          </div>
+          <div class="field span2">
+            <label>Nomor NB (Unit Masuk) *</label>
+            <select id="kNomorNB" required></select>
+            <div class="hint">Hanya menampilkan unit yang masih tercatat di gudang (belum keluar).</div>
+          </div>
+          <div class="field span2" id="kManualWrap" style="display:none;">
+            <label>Keterangan Unit Manual</label>
+            <input type="text" id="kNomorNBManual" placeholder="mis. GAWI 0668 / Prototype / Fiber">
+          </div>
+          <div class="field span2">
+            <label>Keperluan</label>
+            <input type="text" id="kKeperluan" required placeholder="mis. GAWI, produksi, maintenance">
+          </div>
+          <div class="field span2 hint" id="kStokPreview"></div>
+        </form>
+        <div class="form-actions">
+          <button class="btn" type="button" onclick="resetKeluarForm()">Bersihkan</button>
+          <button class="btn btn-out" type="submit" form="formKeluar">↑ Simpan Barang Keluar</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <div><h3>Riwayat Barang Keluar</h3><div class="sub" id="keluarCount">0 transaksi</div></div>
+        </div>
+        <div class="search-bar">
+          <input type="text" id="searchKeluar" placeholder="Cari kode / nama barang / Nomor NB…">
+        </div>
+        <div class="panel-body">
+          <table>
+            <thead><tr><th>Tanggal</th><th>Kode</th><th>Nama Barang</th><th class="right">Qty</th><th>Diambil</th><th>Divisi</th><th>Nomor NB</th><th>Keperluan</th></tr></thead>
+            <tbody id="tblKeluar"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===================== UNIT MASUK / NOMOR NB ===================== -->
+    <div class="page" id="page-unit">
+      <div class="panel">
+        <div class="panel-head">
+          <div><h3>Daftar Unit Masuk</h3><div class="sub" id="unitCount">0 unit</div></div>
+        </div>
+        <div class="search-bar">
+          <input type="text" id="searchUnit" placeholder="Cari Nomor NB / customer / merk…">
+          <select id="filterUnitStatus">
+            <option value="">Semua status</option>
+            <option value="digudang">Masih di gudang</option>
+            <option value="keluar">Sudah keluar</option>
+          </select>
+        </div>
+        <div class="panel-body">
+          <table>
+            <thead><tr><th>Nomor NB</th><th>Customer</th><th>Merk / Jenis</th><th>No. Rangka</th><th>Tgl Masuk</th><th>Status</th></tr></thead>
+            <tbody id="tblUnit"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===================== MASTER BARANG ===================== -->
+    <div class="page" id="page-barang">
+      <div class="panel">
+        <div class="panel-head">
+          <div><h3>Master Barang</h3><div class="sub" id="barangCount">0 item</div></div>
+        </div>
+        <div class="search-bar">
+          <input type="text" id="searchBarang" placeholder="Cari kode / nama barang…">
+          <select id="filterKategori"><option value="">Semua kategori</option></select>
+          <select id="filterStatus">
+            <option value="">Semua status</option>
+            <option value="AMAN">AMAN</option>
+            <option value="PESAN">PESAN</option>
+          </select>
+        </div>
+        <div class="panel-body">
+          <table>
+            <thead><tr><th>Kode</th><th>Nama Barang</th><th>Kategori</th><th>Lokasi</th><th class="right">Stok</th><th>Satuan</th><th>Status</th></tr></thead>
+            <tbody id="tblBarang"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===================== PERLU DIPESAN ===================== -->
+    <div class="page" id="page-pesan">
+      <div class="panel">
+        <div class="panel-head">
+          <div><h3>Perlu Dipesan</h3><div class="sub">Barang dengan stok di bawah batas aman — dihitung otomatis dari transaksi</div></div>
+        </div>
+        <div class="panel-body">
+          <table>
+            <thead><tr><th>Kode</th><th>Nama Barang</th><th>Kategori</th><th>Lokasi</th><th class="right">Stok Berjalan</th><th class="right">Stok Minimum</th></tr></thead>
+            <tbody id="tblPesan"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<div class="toast" id="toast"><span id="toastMsg"></span></div>
+
+<script>
+/* =========================================================
+   SEED DATA — diambil dari MASTER_GUDANG_WEBSITE_BUILD.xlsx
+   ========================================================= */
+const SEED_MASTER_BARANG = [{"kode": 1.0, "nama": "ABS Lembaran", "kategori": "Item", "spesifikasi": "ABS", "satuan": "lembar", "lokasi": "Luar", "stok_awal": 200.0, "stok_berjalan": 294, "stok_min": null, "status": "AMAN"}, {"kode": 2.0, "nama": "Amplas No. 100", "kategori": "Amplas", "spesifikasi": "No. 100", "satuan": "lembar", "lokasi": "Gudang A", "stok_awal": 110.0, "stok_berjalan": -10, "stok_min": null, "status": "PESAN"}, {"kode": 3.0, "nama": "Amplas No. 1000", "kategori": "Amplas", "spesifikasi": "No. 1000", "satuan": "lembar", "lokasi": "Gudang A", "stok_awal": 350.0, "stok_berjalan": 345, "stok_min": null, "status": "AMAN"}, {"kode": 4.0, "nama": "Amplas No. 120", "kategori": "Amplas", "spesifikasi": "No. 120", "satuan": "lembar", "lokasi": "Gudang A", "stok_awal": 240.0, "stok_berjalan": 199, "stok_min": null, "status": "AMAN"}, {"kode": 5.0, "nama": "Amplas No. 150", "kategori": "Amplas", "spesifikasi": "No. 150", "satuan": "lembar", "lokasi": "Gudang A", "stok_awal": 150.0, "stok_berjalan": 359, "stok_min": null, "status": "AMAN"}, {"kode": 6.0, "nama": "Amplas No. 1500", "kategori": "Amplas", "spesifikasi": "No. 1500", "satuan": "lembar", "lokasi": "Gudang A", "stok_awal": 320.0, "stok_berjalan": 278, "stok_min": null, "status": "AMAN"}, {"kode": 7.0, "nama": "Amplas No. 2000", "kategori": "Amplas", "spesifikasi": "No. 2000", "satuan": "lembar", "lokasi": "Gudang A", "stok_awal": 315.0, "stok_berjalan": 271, "stok_min": null, "status": "AMAN"}, {"kode": 8.0, "nama": "Amplas No. 220", "kategori": "Amplas", "spesifikasi": "No. 220", "satuan": "lembar", "lokasi": "Gudang A", "stok_awal": 220.0, "stok_berjalan": 173, "stok_min": null, "status": "AMAN"}, {"kode": 9.0, "nama": "Amplas No. 240", "kategori": "Amplas", "spesifikasi": "No. 240", "satuan": "lembar", "lokasi": "Gudang A", "stok_awal": 130.0, "stok_berjalan": -78, "stok_min": null, "status": "PESAN"}, {"kode": 10.0, "nama": "Amplas No. 3", "kategori": "Amplas", "spesifikasi": "No. 3", "satuan": "roll", "lokasi": "Gudang A", "stok_awal": 3.0, "stok_berjalan": -157, "stok_min": null, "status": "PESAN"}, {"kode": 11.0, "nama": "Amplas No. 320", "kategori": "Amplas", "spesifikasi": "No. 320", "satuan": "lembar", "lokasi": "Gudang A", "stok_awal": 315.0, "stok_berjalan": 293, "stok_min": null, "status": "AMAN"}, {"kode": 12.0, "nama": "Amplas No. 400", "kategori": "Amplas", "spesifikasi": "No. 400", "satuan": "lembar", "lokasi": "Gudang A", "stok_awal": 220.0, "stok_berjalan": -2, "stok_min": null, "status": "PESAN"}, {"kode": 13.0, "nama": "Amplas No. 600", "kategori": "Amplas", "spesifikasi": "No. 600", "satuan": "lembar", "lokasi": "Gudang A", "stok_awal": 410.0, "stok_berjalan": 242, "stok_min": null, "status": "AMAN"}, {"kode": 14.0, "nama": "Amplas No. 800", "kategori": "Amplas", "spesifikasi": "No. 800", "satuan": "lembar", "lokasi": "Gudang A", "stok_awal": 640.0, "stok_berjalan": 444, "stok_min": null, "status": "AMAN"}, {"kode": 15.0, "nama": "Anak Kunci Biasa", "kategori": "Lock", "spesifikasi": "Lock", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 32.0, "stok_berjalan": 28, "stok_min": null, "status": "AMAN"}, {"kode": 16.0, "nama": "Anak Kunci Yuaza", "kategori": "Lock", "spesifikasi": "Lock", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 22.0, "stok_berjalan": 21, "stok_min": null, "status": "AMAN"}, {"kode": 17.0, "nama": "APAR 2kg", "kategori": "Item", "spesifikasi": "2kg", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 0.0, "stok_berjalan": 0, "stok_min": null, "status": "PESAN"}, {"kode": 18.0, "nama": "APAR 3kg", "kategori": "Item", "spesifikasi": "3kg", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 24.0, "stok_berjalan": 18, "stok_min": null, "status": "AMAN"}, {"kode": 19.0, "nama": "APAR 6kg", "kategori": "Item", "spesifikasi": "6kg", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 8.0, "stok_berjalan": 29, "stok_min": null, "status": "AMAN"}, {"kode": 20.0, "nama": "Audio Carman", "kategori": "Electrical", "spesifikasi": "Carman", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 22.0, "stok_berjalan": 21, "stok_min": null, "status": "AMAN"}, {"kode": 21.0, "nama": "Audio Greenbull", "kategori": "Electrical", "spesifikasi": "Greenbul", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 22.0, "stok_berjalan": 18, "stok_min": null, "status": "AMAN"}, {"kode": 22.0, "nama": "Autocoat BT100 ", "kategori": "Cat", "spesifikasi": "Autocoat BT100", "satuan": "kaleng", "lokasi": "Gudang A", "stok_awal": 12.0, "stok_berjalan": 5, "stok_min": null, "status": "AMAN"}, {"kode": 23.0, "nama": "Batu Gerinda", "kategori": "Gerinda", "spesifikasi": "Disc", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 225.0, "stok_berjalan": 89, "stok_min": null, "status": "AMAN"}, {"kode": 24.0, "nama": "Baut JF5x20", "kategori": "Baut", "spesifikasi": "JF5x20", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 1000.0, "stok_berjalan": 987, "stok_min": null, "status": "AMAN"}, {"kode": 25.0, "nama": "Baut JF6x20", "kategori": "Baut", "spesifikasi": "JF6x20", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 1000.0, "stok_berjalan": 950, "stok_min": null, "status": "AMAN"}, {"kode": 26.0, "nama": "Baut JF6x30", "kategori": "Baut", "spesifikasi": "JF6x30", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 1000.0, "stok_berjalan": 906, "stok_min": null, "status": "AMAN"}, {"kode": 27.0, "nama": "Baut JF6x40", "kategori": "Baut", "spesifikasi": "JF6x40", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 1000.0, "stok_berjalan": 1000, "stok_min": null, "status": "AMAN"}, {"kode": 28.0, "nama": "Baut JF6x50", "kategori": "Baut", "spesifikasi": "JF6x50", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 1000.0, "stok_berjalan": 1000, "stok_min": null, "status": "AMAN"}, {"kode": 29.0, "nama": "Baut M10x20", "kategori": "Baut", "spesifikasi": "M10x20", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 1000.0, "stok_berjalan": 944, "stok_min": null, "status": "AMAN"}, {"kode": 30.0, "nama": "Baut M10x30", "kategori": "Baut", "spesifikasi": "M10x30", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 1000.0, "stok_berjalan": 39, "stok_min": null, "status": "AMAN"}, {"kode": 31.0, "nama": "Baut M10x45", "kategori": "Baut", "spesifikasi": "M10x45", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 1000.0, "stok_berjalan": 972, "stok_min": null, "status": "AMAN"}, {"kode": 32.0, "nama": "Baut M10x50", "kategori": "Baut", "spesifikasi": "M10x50", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 500.0, "stok_berjalan": 366, "stok_min": null, "status": "AMAN"}, {"kode": 33.0, "nama": "Baut M12x50", "kategori": "Baut", "spesifikasi": "M12x50", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 1000.0, "stok_berjalan": 812, "stok_min": null, "status": "AMAN"}, {"kode": 34.0, "nama": "Baut M6x20", "kategori": "Baut", "spesifikasi": "M6x20", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 1000.0, "stok_berjalan": 872, "stok_min": null, "status": "AMAN"}, {"kode": 35.0, "nama": "Baut M6x30", "kategori": "Baut", "spesifikasi": "M6x30", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 1000.0, "stok_berjalan": 900, "stok_min": null, "status": "AMAN"}, {"kode": 36.0, "nama": "Baut M6x50", "kategori": "Baut", "spesifikasi": "M6x50", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 1000.0, "stok_berjalan": 996, "stok_min": null, "status": "AMAN"}, {"kode": 37.0, "nama": "Baut M8x20", "kategori": "Baut", "spesifikasi": "M8x20", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 1000.0, "stok_berjalan": 285, "stok_min": null, "status": "AMAN"}, {"kode": 38.0, "nama": "Baut M8x30", "kategori": "Baut", "spesifikasi": "M8x30", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 1000.0, "stok_berjalan": 320, "stok_min": null, "status": "AMAN"}, {"kode": 39.0, "nama": "Baut M8x70", "kategori": "Baut", "spesifikasi": "M8x70", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 1000.0, "stok_berjalan": 790, "stok_min": null, "status": "AMAN"}, {"kode": 40.0, "nama": "Baut Rail Jok", "kategori": "Baut", "spesifikasi": "Rail Jok", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 500.0, "stok_berjalan": 285, "stok_min": null, "status": "AMAN"}, {"kode": 41.0, "nama": "Buzzer", "kategori": "Item", "spesifikasi": "Tombol Merah", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 26.0, "stok_berjalan": 51, "stok_min": null, "status": "AMAN"}, {"kode": 42.0, "nama": "Cat Clear Doff", "kategori": "Cat", "spesifikasi": "Clear Doff", "satuan": "kaleng", "lokasi": "Gudang A", "stok_awal": 6.0, "stok_berjalan": 12, "stok_min": null, "status": "AMAN"}, {"kode": 43.0, "nama": "Cat Comfort Clear", "kategori": "Cat", "spesifikasi": "Comfort Clear", "satuan": "kaleng", "lokasi": "Gudang A", "stok_awal": 5.0, "stok_berjalan": 5, "stok_min": null, "status": "AMAN"}, {"kode": 44.0, "nama": "Cat ESAI Black Doff", "kategori": "Cat", "spesifikasi": "Black Doff", "satuan": "kaleng", "lokasi": "Gudang A", "stok_awal": 13.0, "stok_berjalan": 16, "stok_min": null, "status": "AMAN"}, {"kode": 45.0, "nama": "Cat ESAI Hela Grey", "kategori": "Cat", "spesifikasi": "Hela Grey", "satuan": "kaleng", "lokasi": "Gudang A", "stok_awal": 22.0, "stok_berjalan": 20, "stok_min": null, "status": "AMAN"}, {"kode": 46.0, "nama": "Cat ESAI Light Ivory", "kategori": "Cat", "spesifikasi": "Light Ivory", "satuan": "kaleng", "lokasi": "Gudang A", "stok_awal": 7.0, "stok_berjalan": 6, "stok_min": null, "status": "AMAN"}, {"kode": 47.0, "nama": "CAT ESAI Pastel Grey", "kategori": "Cat", "spesifikasi": "Pastel Grey", "satuan": "kaleng", "lokasi": "Gudang A", "stok_awal": 8.0, "stok_berjalan": 4, "stok_min": null, "status": "AMAN"}, {"kode": 48.0, "nama": "Cat ESAI Stone Grey", "kategori": "Cat", "spesifikasi": "Stone Grey", "satuan": "kaleng", "lokasi": "Gudang A", "stok_awal": 3.0, "stok_berjalan": 3, "stok_min": null, "status": "AMAN"}, {"kode": 49.0, "nama": "Cat ESAI Super Black", "kategori": "Cat", "spesifikasi": "Super Black", "satuan": "kaleng", "lokasi": "Gudang A", "stok_awal": 6.0, "stok_berjalan": 19, "stok_min": null, "status": "AMAN"}, {"kode": 50.0, "nama": "Cat ESAI Super White", "kategori": "Cat", "spesifikasi": "Super White", "satuan": "kaleng", "lokasi": "Gudang A", "stok_awal": 18.0, "stok_berjalan": -114, "stok_min": null, "status": "PESAN"}, {"kode": 51.0, "nama": "Cat Fast Green 1K-1L", "kategori": "Cat", "spesifikasi": "Fast Green 1K", "satuan": "kaleng", "lokasi": "Gudang A", "stok_awal": 6.0, "stok_berjalan": 3, "stok_min": null, "status": "AMAN"}, {"kode": 52.0, "nama": "Cat Grasshoper Green 1K-1L", "kategori": "Cat", "spesifikasi": "Grasshoper Green 1K", "satuan": "kaleng", "lokasi": "Gudang A", "stok_awal": 6.0, "stok_berjalan": 2, "stok_min": null, "status": "AMAN"}, {"kode": 53.0, "nama": "Cat Shinjuku Clear", "kategori": "Cat", "spesifikasi": "Shinjuku Clear", "satuan": "kaleng", "lokasi": "Gudang A", "stok_awal": 9.0, "stok_berjalan": -3, "stok_min": null, "status": "PESAN"}, {"kode": 54.0, "nama": "Cat TJ Supwerwhite 2K-5L", "kategori": "Cat", "spesifikasi": "Superwhite 2K", "satuan": "kaleng", "lokasi": "Gudang A", "stok_awal": 10.0, "stok_berjalan": 8, "stok_min": null, "status": "AMAN"}, {"kode": 55.0, "nama": "Clear 100-5L", "kategori": "Cat", "spesifikasi": "Clear 100", "satuan": "kaleng", "lokasi": "Gudang A", "stok_awal": 32.0, "stok_berjalan": 32, "stok_min": null, "status": "AMAN"}, {"kode": 56.0, "nama": "Clear ASG 300-5L", "kategori": "Cat", "spesifikasi": "Clear ASG 300", "satuan": "kaleng", "lokasi": "Gudang A", "stok_awal": 15.0, "stok_berjalan": 10, "stok_min": null, "status": "AMAN"}, {"kode": 57.0, "nama": "Cutting 4 inch", "kategori": "Gerinda", "spesifikasi": "Disc", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 920.0, "stok_berjalan": 5353, "stok_min": null, "status": "AMAN"}, {"kode": 58.0, "nama": "Door Retaining", "kategori": "Item", "spesifikasi": "Door", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 23.0, "stok_berjalan": 15, "stok_min": null, "status": "AMAN"}, {"kode": 59.0, "nama": "Engsel Bagasi Bus", "kategori": "Engsel", "spesifikasi": "Bagasi", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 12.0, "stok_berjalan": 17, "stok_min": null, "status": "AMAN"}, {"kode": 60.0, "nama": "engsel boozing", "kategori": "Engsel", "spesifikasi": "Engsel", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 100.0, "stok_berjalan": 169, "stok_min": null, "status": "AMAN"}, {"kode": 61.0, "nama": "engsel bracket", "kategori": "Engsel", "spesifikasi": "Engsel", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 28.0, "stok_berjalan": -14, "stok_min": null, "status": "PESAN"}, {"kode": 62.0, "nama": "engsel gelung", "kategori": "Engsel", "spesifikasi": "Engsel", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 22.0, "stok_berjalan": 16, "stok_min": null, "status": "AMAN"}, {"kode": 63.0, "nama": "engsel grill", "kategori": "Engsel", "spesifikasi": "Engsel", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 25.0, "stok_berjalan": 3, "stok_min": null, "status": "AMAN"}, {"kode": 64.0, "nama": "engsel hatchback", "kategori": "Engsel", "spesifikasi": "Engsel", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 200.0, "stok_berjalan": 197, "stok_min": null, "status": "AMAN"}, {"kode": 65.0, "nama": "engsel kupu", "kategori": "Engsel", "spesifikasi": "Engsel", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 30.0, "stok_berjalan": 24, "stok_min": null, "status": "AMAN"}, {"kode": 66.0, "nama": "engsel pintu", "kategori": "Engsel", "spesifikasi": "Engsel", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 0.0, "stok_berjalan": -3, "stok_min": null, "status": "PESAN"}, {"kode": 67.0, "nama": "Engsel Sendok", "kategori": "Engsel", "spesifikasi": "Besi", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 8.0, "stok_berjalan": 5, "stok_min": null, "status": "AMAN"}, {"kode": 68.0, "nama": "Engsel Sikutan", "kategori": "Engsel", "spesifikasi": "Engsel", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 120.0, "stok_berjalan": 96, "stok_min": null, "status": "AMAN"}, {"kode": 69.0, "nama": "Epoxy Filler", "kategori": "Epoxy", "spesifikasi": "ESAI", "satuan": "kaleng", "lokasi": "Gudang A", "stok_awal": 10.0, "stok_berjalan": 25, "stok_min": null, "status": "AMAN"}, {"kode": 70.0, "nama": "Epoxy Primer", "kategori": "Epoxy", "spesifikasi": "ESAI", "satuan": "kaleng", "lokasi": "Gudang A", "stok_awal": 40.0, "stok_berjalan": -188, "stok_min": 20.0, "status": "PESAN"}, {"kode": 71.0, "nama": "Erosil", "kategori": "Item", "spesifikasi": "Erosil", "satuan": "kg", "lokasi": "Gudang A", "stok_awal": 20.0, "stok_berjalan": 21, "stok_min": null, "status": "AMAN"}, {"kode": 72.0, "nama": "Flap Disc 100", "kategori": "Amplas", "spesifikasi": "No. 100", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 30.0, "stok_berjalan": 24, "stok_min": null, "status": "AMAN"}, {"kode": 73.0, "nama": "Flap Disc 320", "kategori": "Amplas", "spesifikasi": "No. 320", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 97.0, "stok_berjalan": 176, "stok_min": null, "status": "AMAN"}, {"kode": 74.0, "nama": "fuse box", "kategori": "Electrical", "spesifikasi": "Electrical", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 15.0, "stok_berjalan": 42, "stok_min": null, "status": "AMAN"}, {"kode": 75.0, "nama": "hand grip", "kategori": "Item", "spesifikasi": "Handle", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 85.0, "stok_berjalan": 557, "stok_min": null, "status": "AMAN"}, {"kode": 76.0, "nama": "Handle center", "kategori": "Item", "spesifikasi": "Handle", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 24.0, "stok_berjalan": 53, "stok_min": null, "status": "AMAN"}, {"kode": 77.0, "nama": "Handle center oval", "kategori": "Item", "spesifikasi": "Handle", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 20.0, "stok_berjalan": 11, "stok_min": null, "status": "AMAN"}, {"kode": 78.0, "nama": "Handle cup mesin", "kategori": "Item", "spesifikasi": "Handle", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 20.0, "stok_berjalan": 48, "stok_min": null, "status": "AMAN"}, {"kode": 79.0, "nama": "Handle dalam", "kategori": "Item", "spesifikasi": "Handle", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 12.0, "stok_berjalan": 24, "stok_min": null, "status": "AMAN"}, {"kode": 80.0, "nama": "Handle oval biasa", "kategori": "Item", "spesifikasi": "Handle", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 61.0, "stok_berjalan": 56, "stok_min": null, "status": "AMAN"}, {"kode": 81.0, "nama": "Handle oval kecil", "kategori": "Item", "spesifikasi": "Handle", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 19.0, "stok_berjalan": 17, "stok_min": null, "status": "AMAN"}, {"kode": 82.0, "nama": "Handle pull", "kategori": "Item", "spesifikasi": "Handle", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 98.0, "stok_berjalan": 67, "stok_min": null, "status": "AMAN"}, {"kode": 83.0, "nama": "Hardener 300-5L", "kategori": "Cat", "spesifikasi": "Hardener 300", "satuan": "kaleng", "lokasi": "Gudang A", "stok_awal": 2.0, "stok_berjalan": -2, "stok_min": null, "status": "PESAN"}, {"kode": 84.0, "nama": "Hardener Slow 100-1L", "kategori": "Cat", "spesifikasi": "Hardener Slow 100", "satuan": "kaleng", "lokasi": "Gudang A", "stok_awal": 77.0, "stok_berjalan": 77, "stok_min": null, "status": "AMAN"}, {"kode": 85.0, "nama": "Head Unit Android", "kategori": "Electrical", "spesifikasi": "Android", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 4.0, "stok_berjalan": -2, "stok_min": null, "status": "PESAN"}, {"kode": 86.0, "nama": "inverter 12v", "kategori": "Electrical", "spesifikasi": "12V", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 2.0, "stok_berjalan": 1, "stok_min": null, "status": "AMAN"}, {"kode": 87.0, "nama": "inverter 24v", "kategori": "Electrical", "spesifikasi": "12V", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 3.0, "stok_berjalan": 2, "stok_min": null, "status": "AMAN"}, {"kode": 88.0, "nama": "Isi Cutter", "kategori": "Item", "spesifikasi": "Cutter", "satuan": "pak", "lokasi": "Gudang A", "stok_awal": 50.0, "stok_berjalan": 138, "stok_min": null, "status": "AMAN"}, {"kode": 89.0, "nama": "jam digital", "kategori": "Electrical", "spesifikasi": "Jam", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 19.0, "stok_berjalan": 53, "stok_min": null, "status": "AMAN"}, {"kode": 90.0, "nama": "Kabel 0,75", "kategori": "Electrical", "spesifikasi": "0,75", "satuan": "roll", "lokasi": "Gudang A", "stok_awal": 25.0, "stok_berjalan": 8, "stok_min": null, "status": "AMAN"}, {"kode": 91.0, "nama": "Kabel 0,85", "kategori": "Electrical", "spesifikasi": "0,85", "satuan": "roll", "lokasi": "Gudang A", "stok_awal": 14.0, "stok_berjalan": -8, "stok_min": null, "status": "PESAN"}, {"kode": 92.0, "nama": "Kabel 1,5", "kategori": "Electrical", "spesifikasi": "1,5", "satuan": "roll", "lokasi": "Gudang A", "stok_awal": 12.0, "stok_berjalan": 8, "stok_min": null, "status": "AMAN"}, {"kode": 93.0, "nama": "Kabel 2,5", "kategori": "Electrical", "spesifikasi": "2,5", "satuan": "roll", "lokasi": "Gudang A", "stok_awal": 9.0, "stok_berjalan": -2, "stok_min": null, "status": "PESAN"}, {"kode": 94.0, "nama": "Kabel aki hitam", "kategori": "Electrical", "spesifikasi": "Kabel Hitam", "satuan": "roll", "lokasi": "Gudang A", "stok_awal": 1.0, "stok_berjalan": -128, "stok_min": null, "status": "PESAN"}, {"kode": 95.0, "nama": "Kabel aki merah", "kategori": "Electrical", "spesifikasi": "Kabel Merah", "satuan": "roll", "lokasi": "Gudang A", "stok_awal": 2.0, "stok_berjalan": -337, "stok_min": null, "status": "PESAN"}, {"kode": 96.0, "nama": "Kabel audio", "kategori": "Electrical", "spesifikasi": "Kabel Audio", "satuan": "roll", "lokasi": "Gudang A", "stok_awal": 5.0, "stok_berjalan": 1, "stok_min": null, "status": "AMAN"}, {"kode": 97.0, "nama": "Kabel listrik", "kategori": "Electrical", "spesifikasi": "Kabel Listrik", "satuan": "roll", "lokasi": "Gudang A", "stok_awal": 2.0, "stok_berjalan": -53, "stok_min": null, "status": "PESAN"}, {"kode": 98.0, "nama": "Kabel rca", "kategori": "Electrical", "spesifikasi": "RCA", "satuan": "roll", "lokasi": "Gudang A", "stok_awal": 9.0, "stok_berjalan": 9, "stok_min": null, "status": "AMAN"}, {"kode": 99.0, "nama": "Kabel transparan", "kategori": "Electrical", "spesifikasi": "Transparan", "satuan": "roll", "lokasi": "Gudang A", "stok_awal": 1.0, "stok_berjalan": -1, "stok_min": null, "status": "PESAN"}, {"kode": 100.0, "nama": "Karet Helm Cream", "kategori": "Karet", "spesifikasi": "Cream", "satuan": "roll", "lokasi": "Gudang A", "stok_awal": 3.0, "stok_berjalan": 3, "stok_min": null, "status": "AMAN"}, {"kode": 101.0, "nama": "Karet Helm Grey", "kategori": "Karet", "spesifikasi": "Grey", "satuan": "roll", "lokasi": "Gudang A", "stok_awal": 6.0, "stok_berjalan": 10, "stok_min": null, "status": "AMAN"}, {"kode": 102.0, "nama": "Karet Helm Hitam", "kategori": "Karet", "spesifikasi": "Hitam", "satuan": "roll", "lokasi": "Gudang A", "stok_awal": 4.0, "stok_berjalan": -6, "stok_min": null, "status": "PESAN"}, {"kode": 103.0, "nama": "Karet Jepit", "kategori": "Karet", "spesifikasi": "Karet", "satuan": "roll", "lokasi": "Gudang A", "stok_awal": 7.0, "stok_berjalan": 54, "stok_min": null, "status": "AMAN"}, {"kode": 104.0, "nama": "Katalis", "kategori": "Item", "spesifikasi": "Katalis", "satuan": "jerigen", "lokasi": "Gudang A", "stok_awal": 0.0, "stok_berjalan": -4, "stok_min": null, "status": "PESAN"}, {"kode": 105.0, "nama": "kawat lock", "kategori": "Item", "spesifikasi": "Lock", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 64.0, "stok_berjalan": 10, "stok_min": null, "status": "AMAN"}, {"kode": 106.0, "nama": "klem aki/sepul aki", "kategori": "Electrical", "spesifikasi": "Aki", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 70.0, "stok_berjalan": 63, "stok_min": null, "status": "AMAN"}, {"kode": 107.0, "nama": "klem selang kecil", "kategori": "Electrical", "spesifikasi": "Selang", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 140.0, "stok_berjalan": 176, "stok_min": null, "status": "AMAN"}, {"kode": 108.0, "nama": "klem selang sedang", "kategori": "Electrical", "spesifikasi": "Selang", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 200.0, "stok_berjalan": 245, "stok_min": null, "status": "AMAN"}, {"kode": 109.0, "nama": "knock bell", "kategori": "Electrical", "spesifikasi": "Bell", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 20.0, "stok_berjalan": 9, "stok_min": null, "status": "AMAN"}, {"kode": 110.0, "nama": "Kobal", "kategori": "Item", "spesifikasi": "Kobal", "satuan": "kaleng", "lokasi": "Gudang A", "stok_awal": 6.0, "stok_berjalan": 10, "stok_min": null, "status": "AMAN"}, {"kode": 111.0, "nama": "kondom skun", "kategori": "Electrical", "spesifikasi": "Skun", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 3.0, "stok_berjalan": 1, "stok_min": null, "status": "AMAN"}, {"kode": 112.0, "nama": "Koran", "kategori": "Item", "spesifikasi": "Koran", "satuan": "ikat", "lokasi": "Gudang A", "stok_awal": 5.0, "stok_berjalan": -58, "stok_min": null, "status": "PESAN"}, {"kode": 113.0, "nama": "kotak step down", "kategori": "Electrical", "spesifikasi": "Kotak", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 50.0, "stok_berjalan": 50, "stok_min": null, "status": "AMAN"}, {"kode": 114.0, "nama": "Kuas 2,5 inch", "kategori": "Item", "spesifikasi": "2,5 inch", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 39.0, "stok_berjalan": 9, "stok_min": null, "status": "AMAN"}, {"kode": 115.0, "nama": "Kuas 3 inch", "kategori": "Item", "spesifikasi": "3 inch", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 33.0, "stok_berjalan": 11, "stok_min": null, "status": "AMAN"}, {"kode": 116.0, "nama": "kunci grill", "kategori": "Item", "spesifikasi": "Lock", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 104.0, "stok_berjalan": 77, "stok_min": null, "status": "AMAN"}, {"kode": 117.0, "nama": "lampu foglam kecil", "kategori": "Electrical", "spesifikasi": "Lampu", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 3.0, "stok_berjalan": -1, "stok_min": null, "status": "PESAN"}, {"kode": 118.0, "nama": "lampu isoka/lampu bemper", "kategori": "Electrical", "spesifikasi": "Lampu", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 9.0, "stok_berjalan": -6, "stok_min": null, "status": "PESAN"}, {"kode": 119.0, "nama": "lampu jb2 1set", "kategori": "Electrical", "spesifikasi": "Lampu", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 4.0, "stok_berjalan": 1, "stok_min": null, "status": "AMAN"}, {"kode": 120.0, "nama": "lampu plafon", "kategori": "Electrical", "spesifikasi": "Lampu", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 9.0, "stok_berjalan": 8, "stok_min": null, "status": "AMAN"}, {"kode": 121.0, "nama": "lampu plat nomer", "kategori": "Electrical", "spesifikasi": "Lampu", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 0.0, "stok_berjalan": 50, "stok_min": null, "status": "AMAN"}, {"kode": 122.0, "nama": "lampu rotari", "kategori": "Electrical", "spesifikasi": "Lampu", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 3.0, "stok_berjalan": -13, "stok_min": null, "status": "PESAN"}, {"kode": 123.0, "nama": "led roll kuning 24v", "kategori": "Electrical", "spesifikasi": "Lampu", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 20.0, "stok_berjalan": 78, "stok_min": null, "status": "AMAN"}, {"kode": 124.0, "nama": "led roll putih 24v", "kategori": "Electrical", "spesifikasi": "Lampu", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 23.0, "stok_berjalan": 10, "stok_min": null, "status": "AMAN"}, {"kode": 125.0, "nama": "led roll warm white", "kategori": "Electrical", "spesifikasi": "Lampu", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 13.0, "stok_berjalan": -8, "stok_min": null, "status": "PESAN"}, {"kode": 126.0, "nama": "Lem Fox", "kategori": "Lem", "spesifikasi": "Fox", "satuan": "kaleng", "lokasi": "Gudang A", "stok_awal": 16.0, "stok_berjalan": 53, "stok_min": null, "status": "AMAN"}, {"kode": 127.0, "nama": "Lis 2x1", "kategori": "Besi", "spesifikasi": "2x1", "satuan": "lembar", "lokasi": "Luar", "stok_awal": 100.0, "stok_berjalan": 96, "stok_min": null, "status": "AMAN"}, {"kode": 128.0, "nama": "Lis B", "kategori": "Besi", "spesifikasi": "B", "satuan": "batang", "lokasi": "Rak Luar", "stok_awal": 60.0, "stok_berjalan": 55, "stok_min": null, "status": "AMAN"}, {"kode": 129.0, "nama": "Lis Lampu", "kategori": "Besi", "spesifikasi": "Besi", "satuan": "batang", "lokasi": "Rak Luar", "stok_awal": 48.0, "stok_berjalan": 42, "stok_min": null, "status": "AMAN"}, {"kode": 130.0, "nama": "Lis M", "kategori": "Besi", "spesifikasi": "Lis", "satuan": "batang", "lokasi": "Gudang A", "stok_awal": 142.0, "stok_berjalan": 199, "stok_min": null, "status": "AMAN"}, {"kode": 131.0, "nama": "Lis Pancing", "kategori": "Besi", "spesifikasi": "Lis", "satuan": "batang", "lokasi": "Gudang A", "stok_awal": 120.0, "stok_berjalan": 106, "stok_min": null, "status": "AMAN"}, {"kode": 132.0, "nama": "Lis Pintu Dalam", "kategori": "Besi", "spesifikasi": "Besi", "satuan": "batang", "lokasi": "Rak Luar", "stok_awal": 20.0, "stok_berjalan": 8, "stok_min": null, "status": "AMAN"}, {"kode": 133.0, "nama": "Lis Pintu Luar", "kategori": "Besi", "spesifikasi": "Besi", "satuan": "batang", "lokasi": "Rak Luar", "stok_awal": 20.0, "stok_berjalan": 3, "stok_min": null, "status": "AMAN"}, {"kode": 134.0, "nama": "Lis Trap", "kategori": "Besi", "spesifikasi": "Lis", "satuan": "batang", "lokasi": "Gudang A", "stok_awal": 56.0, "stok_berjalan": 102, "stok_min": null, "status": "AMAN"}, {"kode": 135.0, "nama": "lock bagasi", "kategori": "Item", "spesifikasi": "Lampu", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 107.0, "stok_berjalan": 135, "stok_min": null, "status": "AMAN"}, {"kode": 136.0, "nama": "lock hapich/bus", "kategori": "Item", "spesifikasi": "Lock", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 67.0, "stok_berjalan": 40, "stok_min": null, "status": "AMAN"}, {"kode": 137.0, "nama": "Lock L300", "kategori": "Item", "spesifikasi": "Lock", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 76.0, "stok_berjalan": 41, "stok_min": null, "status": "AMAN"}, {"kode": 138.0, "nama": "lock mangkok", "kategori": "Item", "spesifikasi": "Lock", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 138.0, "stok_berjalan": 95, "stok_min": null, "status": "AMAN"}, {"kode": 139.0, "nama": "lock solar", "kategori": "Item", "spesifikasi": "Lock", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 24.0, "stok_berjalan": 9, "stok_min": null, "status": "AMAN"}, {"kode": 140.0, "nama": "lock tool kit", "kategori": "Item", "spesifikasi": "Lock", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 115.0, "stok_berjalan": 86, "stok_min": null, "status": "AMAN"}, {"kode": 141.0, "nama": "louver bypas", "kategori": "Item", "spesifikasi": "AC", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 85.0, "stok_berjalan": -40, "stok_min": null, "status": "PESAN"}, {"kode": 142.0, "nama": "Louver GAWI", "kategori": "Item", "spesifikasi": "AC", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 45.0, "stok_berjalan": -5, "stok_min": null, "status": "PESAN"}, {"kode": 143.0, "nama": "louver hitam", "kategori": "Electrical", "spesifikasi": "AC", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 2.0, "stok_berjalan": 2, "stok_min": null, "status": "AMAN"}, {"kode": 144.0, "nama": "louver jb2 coklat", "kategori": "Electrical", "spesifikasi": "AC", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 12.0, "stok_berjalan": -1, "stok_min": null, "status": "PESAN"}, {"kode": 145.0, "nama": "louver jb2 grey", "kategori": "Electrical", "spesifikasi": "AC", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 60.0, "stok_berjalan": 5, "stok_min": null, "status": "AMAN"}, {"kode": 146.0, "nama": "Mata Ayam Abu-Abu", "kategori": "Item", "spesifikasi": "Abu", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 1000.0, "stok_berjalan": 2094, "stok_min": null, "status": "AMAN"}, {"kode": 147.0, "nama": "Mata Ayam Cream", "kategori": "Item", "spesifikasi": "Cream", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 500.0, "stok_berjalan": 450, "stok_min": null, "status": "AMAN"}, {"kode": 148.0, "nama": "Met", "kategori": "Item", "spesifikasi": "Met", "satuan": "roll", "lokasi": "Gudang A", "stok_awal": 2.0, "stok_berjalan": 4, "stok_min": null, "status": "AMAN"}, {"kode": 149.0, "nama": "Miror", "kategori": "Item", "spesifikasi": "Miror", "satuan": "kaleng", "lokasi": "Gudang A", "stok_awal": 4.0, "stok_berjalan": 9, "stok_min": null, "status": "AMAN"}, {"kode": 150.0, "nama": "Mp3+antena", "kategori": "Electrical", "spesifikasi": "MP3", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 19.0, "stok_berjalan": 17, "stok_min": null, "status": "AMAN"}, {"kode": 151.0, "nama": "padle lock", "kategori": "Item", "spesifikasi": "Lock", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 17.0, "stok_berjalan": 17, "stok_min": null, "status": "AMAN"}, {"kode": 152.0, "nama": "Paku Rivet 440", "kategori": "Rivet", "spesifikasi": 440.0, "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 500.0, "stok_berjalan": 1857, "stok_min": null, "status": "AMAN"}, {"kode": 153.0, "nama": "Paku Rivet 675", "kategori": "Rivet", "spesifikasi": 675.0, "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 500.0, "stok_berjalan": 499, "stok_min": null, "status": "AMAN"}, {"kode": 154.0, "nama": "palu pemecah kaca", "kategori": "Item", "spesifikasi": "Palu", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 112.0, "stok_berjalan": 116, "stok_min": null, "status": "AMAN"}, {"kode": 155.0, "nama": "pangkon partisi", "kategori": "Item", "spesifikasi": "Pangkon", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 80.0, "stok_berjalan": 64, "stok_min": null, "status": "AMAN"}, {"kode": 156.0, "nama": "pangkon pipa stenlins besar", "kategori": "Item", "spesifikasi": "Pangkon", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 50.0, "stok_berjalan": 50, "stok_min": null, "status": "AMAN"}, {"kode": 157.0, "nama": "pangkon pipa stenlis kecil", "kategori": "Item", "spesifikasi": "Pangkon", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 50.0, "stok_berjalan": 40, "stok_min": null, "status": "AMAN"}, {"kode": 158.0, "nama": "pangkon pipa T", "kategori": "Item", "spesifikasi": "Pangkon", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 70.0, "stok_berjalan": 22, "stok_min": null, "status": "AMAN"}, {"kode": 159.0, "nama": "Pipa 1,5x1,5", "kategori": "Pipa", "spesifikasi": "1,5x1,5", "satuan": "batang", "lokasi": "Luar", "stok_awal": 6.0, "stok_berjalan": 56, "stok_min": null, "status": "AMAN"}, {"kode": 160.0, "nama": "Pipa 2x2", "kategori": "Pipa", "spesifikasi": "2x2", "satuan": "batang", "lokasi": "Luar", "stok_awal": 24.0, "stok_berjalan": 37, "stok_min": null, "status": "AMAN"}, {"kode": 161.0, "nama": "Pipa 3x3", "kategori": "Pipa", "spesifikasi": "3x3", "satuan": "batang", "lokasi": "Luar", "stok_awal": 137.0, "stok_berjalan": 138, "stok_min": null, "status": "AMAN"}, {"kode": 162.0, "nama": "4X2-001", "kategori": "Pipa", "spesifikasi": "4x2", "satuan": "batang", "lokasi": "Luar", "stok_awal": 50.0, "stok_berjalan": 50, "stok_min": null, "status": "AMAN"}, {"kode": 163.0, "nama": "Pipa 4x3", "kategori": "Pipa", "spesifikasi": "4x3", "satuan": "batang", "lokasi": "Luar", "stok_awal": 0.0, "stok_berjalan": -8, "stok_min": null, "status": "PESAN"}, {"kode": 164.0, "nama": "Pipa 4x6", "kategori": "Pipa", "spesifikasi": "4x6", "satuan": "batang", "lokasi": "Luar", "stok_awal": 92.0, "stok_berjalan": 256, "stok_min": null, "status": "AMAN"}, {"kode": 165.0, "nama": "Pipa 6x3", "kategori": "Pipa", "spesifikasi": "6x3", "satuan": "batang", "lokasi": "Luar", "stok_awal": 28.0, "stok_berjalan": 28, "stok_min": null, "status": "AMAN"}, {"kode": 166.0, "nama": "Plat Bordes 2mm", "kategori": "Plat", "spesifikasi": "2mm", "satuan": "lembar", "lokasi": "Luar", "stok_awal": 6.0, "stok_berjalan": 6, "stok_min": null, "status": "AMAN"}, {"kode": 167.0, "nama": "Plat Galvanil 1mm", "kategori": "Plat", "spesifikasi": "1mm", "satuan": "lembar", "lokasi": "Luar", "stok_awal": 86.0, "stok_berjalan": -317, "stok_min": null, "status": "PESAN"}, {"kode": 168.0, "nama": "Plat Hitam 2mm", "kategori": "Plat", "spesifikasi": "2mm", "satuan": "lembar", "lokasi": "Luar", "stok_awal": 200.0, "stok_berjalan": 387, "stok_min": null, "status": "AMAN"}, {"kode": 169.0, "nama": "Pre Amp", "kategori": "Electrical", "spesifikasi": "Pre Amp", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 1.0, "stok_berjalan": 1, "stok_min": null, "status": "AMAN"}, {"kode": 170.0, "nama": "PVA", "kategori": "Item", "spesifikasi": "PVA", "satuan": "kaleng", "lokasi": "Gudang A", "stok_awal": 0.0, "stok_berjalan": -1, "stok_min": null, "status": "PESAN"}, {"kode": 171.0, "nama": "Rail Jok", "kategori": "Besi", "spesifikasi": "Besi", "satuan": "batang", "lokasi": "Rak Luar", "stok_awal": 50.0, "stok_berjalan": 42, "stok_min": null, "status": "AMAN"}, {"kode": 172.0, "nama": "relay", "kategori": "Electrical", "spesifikasi": "Relay", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 75.0, "stok_berjalan": 38, "stok_min": null, "status": "AMAN"}, {"kode": 173.0, "nama": "Resin", "kategori": "Item", "spesifikasi": "Resin", "satuan": "drum", "lokasi": "Gudang A", "stok_awal": 2.0, "stok_berjalan": 5, "stok_min": null, "status": "AMAN"}, {"kode": 174.0, "nama": "rumah relay", "kategori": "Electrical", "spesifikasi": "Relay", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 60.0, "stok_berjalan": 42, "stok_min": null, "status": "AMAN"}, {"kode": 175.0, "nama": "rumah sikring isi 1", "kategori": "Electrical", "spesifikasi": "Sikring", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 20.0, "stok_berjalan": 12, "stok_min": null, "status": "AMAN"}, {"kode": 176.0, "nama": "rumah sikring isi 6", "kategori": "Electrical", "spesifikasi": "Sikring", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 23.0, "stok_berjalan": 5, "stok_min": null, "status": "AMAN"}, {"kode": 177.0, "nama": "sadel ties", "kategori": "Item", "spesifikasi": "Ties", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 4.0, "stok_berjalan": -1, "stok_min": null, "status": "PESAN"}, {"kode": 178.0, "nama": "saklar engkel", "kategori": "Electrical", "spesifikasi": "Saklar", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 88.0, "stok_berjalan": 120, "stok_min": null, "status": "AMAN"}, {"kode": 179.0, "nama": "saklar kaki 8", "kategori": "Electrical", "spesifikasi": "Saklar", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 11.0, "stok_berjalan": -20, "stok_min": null, "status": "PESAN"}, {"kode": 180.0, "nama": "saklar kecil", "kategori": "Electrical", "spesifikasi": "Saklar", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 20.0, "stok_berjalan": 10, "stok_min": null, "status": "AMAN"}, {"kode": 181.0, "nama": "saklar lampu", "kategori": "Electrical", "spesifikasi": "Saklar", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 3.0, "stok_berjalan": -9, "stok_min": null, "status": "PESAN"}, {"kode": 182.0, "nama": "Sealent Cream", "kategori": "Sealent", "spesifikasi": "Cream", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 80.0, "stok_berjalan": 35, "stok_min": null, "status": "AMAN"}, {"kode": 183.0, "nama": "Sealent Dark Grey", "kategori": "Sealent", "spesifikasi": "Dark Grey", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 5.0, "stok_berjalan": 203, "stok_min": null, "status": "AMAN"}, {"kode": 184.0, "nama": "Sealent Kaca Dalam", "kategori": "Sealent", "spesifikasi": "Kaca Dalam", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 20.0, "stok_berjalan": -237, "stok_min": null, "status": "PESAN"}, {"kode": 185.0, "nama": "Sealent Kaca Luar", "kategori": "Sealent", "spesifikasi": "Kaca Luar", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 180.0, "stok_berjalan": 72, "stok_min": null, "status": "AMAN"}, {"kode": 186.0, "nama": "Sealent Putih", "kategori": "Sealent", "spesifikasi": "Putih", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 60.0, "stok_berjalan": -29, "stok_min": null, "status": "PESAN"}, {"kode": 187.0, "nama": "Sekrup 3x2", "kategori": "Sekrup", "spesifikasi": "3x2", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 1000.0, "stok_berjalan": -675, "stok_min": null, "status": "PESAN"}, {"kode": 188.0, "nama": "Sekrup 3x25", "kategori": "Sekrup", "spesifikasi": "3x25", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 500.0, "stok_berjalan": -986, "stok_min": null, "status": "PESAN"}, {"kode": 189.0, "nama": "Sekrup 3x30", "kategori": "Sekrup", "spesifikasi": "3x30", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 500.0, "stok_berjalan": -673, "stok_min": null, "status": "PESAN"}, {"kode": 190.0, "nama": "Sekrup 3x50", "kategori": "Sekrup", "spesifikasi": "3x50", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 500.0, "stok_berjalan": -268, "stok_min": null, "status": "PESAN"}, {"kode": 191.0, "nama": "Sekrup Drilling 3,5cm", "kategori": "Sekrup", "spesifikasi": "3,5cm", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 500.0, "stok_berjalan": 297, "stok_min": null, "status": "AMAN"}, {"kode": 192.0, "nama": "Sekrup Drilling 3cm", "kategori": "Sekrup", "spesifikasi": "3cm", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 500.0, "stok_berjalan": 5690, "stok_min": null, "status": "AMAN"}, {"kode": 193.0, "nama": "Sekrup Drilling 5cm", "kategori": "Sekrup", "spesifikasi": "5cm", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 500.0, "stok_berjalan": 540, "stok_min": null, "status": "AMAN"}, {"kode": 194.0, "nama": "selang besar", "kategori": "Electrical", "spesifikasi": "Selang", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 1.0, "stok_berjalan": -3, "stok_min": null, "status": "PESAN"}, {"kode": 195.0, "nama": "selang radiator", "kategori": "Electrical", "spesifikasi": "Selang", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 9.0, "stok_berjalan": 6, "stok_min": null, "status": "AMAN"}, {"kode": 196.0, "nama": "selang solar", "kategori": "Electrical", "spesifikasi": "Selang", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 6.0, "stok_berjalan": -54, "stok_min": null, "status": "PESAN"}, {"kode": 197.0, "nama": "sikring gepeng 10A", "kategori": "Electrical", "spesifikasi": "Sikring", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 5.0, "stok_berjalan": -70, "stok_min": null, "status": "PESAN"}, {"kode": 198.0, "nama": "sikring gepeng 15A", "kategori": "Electrical", "spesifikasi": "Sikring", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 7.0, "stok_berjalan": 2, "stok_min": null, "status": "AMAN"}, {"kode": 199.0, "nama": "sikring gepeng 20A", "kategori": "Electrical", "spesifikasi": "Sikring", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 5.0, "stok_berjalan": 1, "stok_min": null, "status": "AMAN"}, {"kode": 200.0, "nama": "sikring gepeng 5A", "kategori": "Electrical", "spesifikasi": "Sikring", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 2.0, "stok_berjalan": -4, "stok_min": null, "status": "PESAN"}, {"kode": 201.0, "nama": "sikring induk", "kategori": "Electrical", "spesifikasi": "Sikring", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 30.0, "stok_berjalan": 11, "stok_min": null, "status": "AMAN"}, {"kode": 202.0, "nama": "sikring tabung 10A", "kategori": "Electrical", "spesifikasi": "Sikring", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 4.0, "stok_berjalan": -18, "stok_min": null, "status": "PESAN"}, {"kode": 203.0, "nama": "sikring tabung 15A", "kategori": "Electrical", "spesifikasi": "Sikring", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 10.0, "stok_berjalan": 0, "stok_min": null, "status": "PESAN"}, {"kode": 204.0, "nama": "sikring tabung 20A", "kategori": "Electrical", "spesifikasi": "Sikring", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 8.0, "stok_berjalan": 8, "stok_min": null, "status": "AMAN"}, {"kode": 205.0, "nama": "sikring tabung 25A", "kategori": "Electrical", "spesifikasi": "Sikring", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 4.0, "stok_berjalan": 4, "stok_min": null, "status": "AMAN"}, {"kode": 206.0, "nama": "Siku 3x3", "kategori": "Besi", "spesifikasi": "3x3", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 30.0, "stok_berjalan": -9, "stok_min": null, "status": "PESAN"}, {"kode": 207.0, "nama": "Siku 4x4", "kategori": "Besi", "spesifikasi": "4x4", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 30.0, "stok_berjalan": -116, "stok_min": null, "status": "PESAN"}, {"kode": 208.0, "nama": "skun aki", "kategori": "Electrical", "spesifikasi": "Skun", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 12.0, "stok_berjalan": 49, "stok_min": null, "status": "AMAN"}, {"kode": 209.0, "nama": "Skun Cewe Cowo", "kategori": "Electrical", "spesifikasi": "Skun", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 16.0, "stok_berjalan": 1955, "stok_min": null, "status": "AMAN"}, {"kode": 210.0, "nama": "Socket isi 1", "kategori": "Electrical", "spesifikasi": "Socket", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 118.0, "stok_berjalan": 106, "stok_min": null, "status": "AMAN"}, {"kode": 211.0, "nama": "Socket isi 2", "kategori": "Electrical", "spesifikasi": "Socket", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 60.0, "stok_berjalan": -82, "stok_min": null, "status": "PESAN"}, {"kode": 212.0, "nama": "Socket isi 3", "kategori": "Electrical", "spesifikasi": "Socket", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 123.0, "stok_berjalan": -38, "stok_min": null, "status": "PESAN"}, {"kode": 213.0, "nama": "Socket isi 4", "kategori": "Electrical", "spesifikasi": "Socket", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 74.0, "stok_berjalan": -18, "stok_min": null, "status": "PESAN"}, {"kode": 214.0, "nama": "Socket isi 6", "kategori": "Electrical", "spesifikasi": "Socket", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 76.0, "stok_berjalan": 19, "stok_min": null, "status": "AMAN"}, {"kode": 215.0, "nama": "Socket isi 8", "kategori": "Electrical", "spesifikasi": "Socket", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 58.0, "stok_berjalan": 29, "stok_min": null, "status": "AMAN"}, {"kode": 216.0, "nama": "Solasi 1cm", "kategori": "Item", "spesifikasi": "Solasi", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 768.0, "stok_berjalan": 523, "stok_min": null, "status": "AMAN"}, {"kode": 217.0, "nama": "Solasi 2cm", "kategori": "Item", "spesifikasi": "Solasi", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 135.0, "stok_berjalan": 319, "stok_min": null, "status": "AMAN"}, {"kode": 218.0, "nama": "Solasi 5cm", "kategori": "Item", "spesifikasi": "Solasi", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 96.0, "stok_berjalan": 193, "stok_min": null, "status": "AMAN"}, {"kode": 219.0, "nama": "Solasi 5mm", "kategori": "Item", "spesifikasi": "Solasi", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 348.0, "stok_berjalan": 324, "stok_min": null, "status": "AMAN"}, {"kode": 220.0, "nama": "solasi bakar", "kategori": "Electrical", "spesifikasi": "Solasi", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 1.0, "stok_berjalan": -2, "stok_min": null, "status": "PESAN"}, {"kode": 221.0, "nama": "solasi kabel", "kategori": "Electrical", "spesifikasi": "Solasi", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 114.0, "stok_berjalan": 123, "stok_min": null, "status": "AMAN"}, {"kode": 222.0, "nama": "spion electric", "kategori": "Electrical", "spesifikasi": "Spion", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 10.0, "stok_berjalan": 8, "stok_min": null, "status": "AMAN"}, {"kode": 223.0, "nama": "spiral 10mm", "kategori": "Electrical", "spesifikasi": "10mm", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 5.0, "stok_berjalan": 2, "stok_min": null, "status": "AMAN"}, {"kode": 224.0, "nama": "spiral 13mm", "kategori": "Electrical", "spesifikasi": "13mm", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 3.0, "stok_berjalan": 2, "stok_min": null, "status": "AMAN"}, {"kode": 225.0, "nama": "spiral 15mm", "kategori": "Electrical", "spesifikasi": "15mm", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 3.0, "stok_berjalan": 2, "stok_min": null, "status": "AMAN"}, {"kode": 226.0, "nama": "spiral 19mm", "kategori": "Electrical", "spesifikasi": "19mm", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 2.0, "stok_berjalan": 2, "stok_min": null, "status": "AMAN"}, {"kode": 227.0, "nama": "spiral 5mm", "kategori": "Electrical", "spesifikasi": "5mm", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 4.0, "stok_berjalan": 1, "stok_min": null, "status": "AMAN"}, {"kode": 228.0, "nama": "spiral 7mm", "kategori": "Electrical", "spesifikasi": "7mm", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 7.0, "stok_berjalan": 6, "stok_min": null, "status": "AMAN"}, {"kode": 229.0, "nama": "Spon Tebal 1cm", "kategori": "Item", "spesifikasi": "1cm", "satuan": "lembar", "lokasi": "Gudang C", "stok_awal": 25.0, "stok_berjalan": 27, "stok_min": null, "status": "AMAN"}, {"kode": 230.0, "nama": "Spon Tipis 4mm", "kategori": "Item", "spesifikasi": "4mm", "satuan": "lembar", "lokasi": "Gudang C", "stok_awal": 360.0, "stok_berjalan": 402, "stok_min": null, "status": "AMAN"}, {"kode": 231.0, "nama": "Spon Topi", "kategori": "Item", "spesifikasi": "Topi", "satuan": "lembar", "lokasi": "Gudang C", "stok_awal": 16.0, "stok_berjalan": 42, "stok_min": null, "status": "AMAN"}, {"kode": 232.0, "nama": "steker gepeng cowo cewe", "kategori": "Electrical", "spesifikasi": "Steker", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 25.0, "stok_berjalan": 25, "stok_min": null, "status": "AMAN"}, {"kode": 233.0, "nama": "steker stop kontak", "kategori": "Electrical", "spesifikasi": "Steker", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 9.0, "stok_berjalan": 2, "stok_min": null, "status": "AMAN"}, {"kode": 234.0, "nama": "step down", "kategori": "Electrical", "spesifikasi": "Electrical", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 50.0, "stok_berjalan": 50, "stok_min": null, "status": "AMAN"}, {"kode": 235.0, "nama": "stop kontak isi 2", "kategori": "Electrical", "spesifikasi": "Stop Kontak", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 3.0, "stok_berjalan": 0, "stok_min": null, "status": "PESAN"}, {"kode": 236.0, "nama": "stop kontak isi 4", "kategori": "Electrical", "spesifikasi": "Stop Kontak", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 6.0, "stok_berjalan": 5, "stok_min": null, "status": "AMAN"}, {"kode": 237.0, "nama": "Stopper E", "kategori": "Item", "spesifikasi": "Stopper", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 30.0, "stok_berjalan": 30, "stok_min": null, "status": "AMAN"}, {"kode": 238.0, "nama": "sunduk kunci grill", "kategori": "Item", "spesifikasi": "Sunduk", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 33.0, "stok_berjalan": 26, "stok_min": null, "status": "AMAN"}, {"kode": 239.0, "nama": "Sunroof", "kategori": "Item", "spesifikasi": "Sunroof", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 6.0, "stok_berjalan": 19, "stok_min": null, "status": "AMAN"}, {"kode": 240.0, "nama": "tali ties", "kategori": "Item", "spesifikasi": "Tali", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 10.0, "stok_berjalan": 9, "stok_min": null, "status": "AMAN"}, {"kode": 241.0, "nama": "Thinner Decreaser", "kategori": "Thinner", "spesifikasi": "Decreaser", "satuan": "kaleng", "lokasi": "Gudang A", "stok_awal": 0.0, "stok_berjalan": -22, "stok_min": null, "status": "PESAN"}, {"kode": 242.0, "nama": "Thinner Polyurethane", "kategori": "Thinner", "spesifikasi": "ESAI", "satuan": "kaleng", "lokasi": "Gudang A", "stok_awal": 13.0, "stok_berjalan": 11, "stok_min": null, "status": "AMAN"}, {"kode": 243.0, "nama": "Thinner PU", "kategori": "Thinner", "spesifikasi": "PU", "satuan": "kaleng", "lokasi": "Gudang A", "stok_awal": 31.0, "stok_berjalan": 43, "stok_min": null, "status": "AMAN"}, {"kode": 244.0, "nama": "Thinner TEP", "kategori": "Thinner", "spesifikasi": "ESAI", "satuan": "kaleng", "lokasi": "Gudang A", "stok_awal": 30.0, "stok_berjalan": -187, "stok_min": null, "status": "PESAN"}, {"kode": 245.0, "nama": "timah", "kategori": "Item", "spesifikasi": "Timah", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 17.0, "stok_berjalan": 14, "stok_min": null, "status": "AMAN"}, {"kode": 246.0, "nama": "togel kaki 2", "kategori": "Electrical", "spesifikasi": "Kaki 2", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 50.0, "stok_berjalan": 50, "stok_min": null, "status": "AMAN"}, {"kode": 247.0, "nama": "togel kaki 3", "kategori": "Electrical", "spesifikasi": "Kaki 3", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 30.0, "stok_berjalan": 30, "stok_min": null, "status": "AMAN"}, {"kode": 248.0, "nama": "Triplek 4mm", "kategori": "Triplek", "spesifikasi": "4mm", "satuan": "lembar", "lokasi": "Luar", "stok_awal": 100.0, "stok_berjalan": 152, "stok_min": null, "status": "AMAN"}, {"kode": 249.0, "nama": "Triplek 6mm", "kategori": "Triplek", "spesifikasi": "6mm", "satuan": "lembar", "lokasi": "Luar", "stok_awal": 100.0, "stok_berjalan": 173, "stok_min": null, "status": "AMAN"}, {"kode": 250.0, "nama": "tutup kunci grill", "kategori": "Item", "spesifikasi": "Tutup Kunci", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 130.0, "stok_berjalan": 84, "stok_min": null, "status": "AMAN"}, {"kode": 251.0, "nama": "Tutup Solar", "kategori": "Item", "spesifikasi": "Tutup Solar", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 26.0, "stok_berjalan": 3, "stok_min": null, "status": "AMAN"}, {"kode": 252.0, "nama": "tv 24inc", "kategori": "Electrical", "spesifikasi": "TV", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 0.0, "stok_berjalan": 0, "stok_min": null, "status": "PESAN"}, {"kode": 253.0, "nama": "Usb charger", "kategori": "Electrical", "spesifikasi": "USB Slot", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 62.0, "stok_berjalan": 62, "stok_min": null, "status": "AMAN"}, {"kode": 254.0, "nama": "Wiper, selang, tabung, dll", "kategori": "Item", "spesifikasi": "Set", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 4.0, "stok_berjalan": -5, "stok_min": null, "status": "PESAN"}, {"kode": 255.0, "nama": "Shock Bagasi 500N", "kategori": "Shock", "spesifikasi": "500N", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 17.0, "stok_berjalan": -16, "stok_min": null, "status": "PESAN"}, {"kode": 256.0, "nama": "Pipa Knalpot", "kategori": "Item", "spesifikasi": "Knalpot", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 3.0, "stok_berjalan": 2, "stok_min": null, "status": "AMAN"}, {"kode": 257.0, "nama": "Silincer/Muffler Knalpot", "kategori": "Item", "spesifikasi": "Knalpot", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 5.0, "stok_berjalan": 4, "stok_min": null, "status": "AMAN"}, {"kode": 258.0, "nama": "Engsel Paradise", "kategori": "Engsel", "spesifikasi": "Engsel", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 4.0, "stok_berjalan": 0, "stok_min": null, "status": "PESAN"}, {"kode": 259.0, "nama": "Lem G", "kategori": "Item", "spesifikasi": "Lem", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 20.0, "stok_berjalan": 10, "stok_min": null, "status": "AMAN"}, {"kode": 260.0, "nama": "Matabor 3mm", "kategori": "Item", "spesifikasi": "Matabor", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 84.0, "stok_berjalan": 155, "stok_min": null, "status": "AMAN"}, {"kode": 261.0, "nama": "Matabor 3,5mm", "kategori": "Item", "spesifikasi": "Matabor", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 42.0, "stok_berjalan": 190, "stok_min": null, "status": "AMAN"}, {"kode": 262.0, "nama": "Amplas Sending No. 100", "kategori": "Item", "spesifikasi": "Amplas", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 0.0, "stok_berjalan": -151, "stok_min": null, "status": "PESAN"}, {"kode": 263.0, "nama": "Shock Bagasi 250N", "kategori": "Item", "spesifikasi": "Shock", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 9.0, "stok_berjalan": 9, "stok_min": null, "status": "AMAN"}, {"kode": 264.0, "nama": "Shock Bagasi 350N", "kategori": "Item", "spesifikasi": "Shock", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 13.0, "stok_berjalan": 13, "stok_min": null, "status": "AMAN"}, {"kode": 265.0, "nama": "Shock Bagasi 600N", "kategori": "Item", "spesifikasi": "Shock", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 34.0, "stok_berjalan": 34, "stok_min": null, "status": "AMAN"}, {"kode": 266.0, "nama": "Shock Bagasi 750N", "kategori": "Shock", "spesifikasi": "Shock", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 27.0, "stok_berjalan": 7, "stok_min": null, "status": "AMAN"}, {"kode": 267.0, "nama": "Shock Bagasi 1000N", "kategori": "Shock", "spesifikasi": "Shock", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 26.0, "stok_berjalan": -11, "stok_min": null, "status": "PESAN"}, {"kode": 268.0, "nama": "Shock Bagasi 1300N", "kategori": "Shock", "spesifikasi": "Shock", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 9.0, "stok_berjalan": 9, "stok_min": null, "status": "AMAN"}, {"kode": 269.0, "nama": "Talk 25KG", "kategori": "Item", "spesifikasi": "Talk 25kg", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 2.0, "stok_berjalan": 9, "stok_min": null, "status": "AMAN"}, {"kode": 270.0, "nama": "Engsel Pneumatic", "kategori": "Engsel", "spesifikasi": "Engsel", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 0.0, "stok_berjalan": 0, "stok_min": null, "status": "PESAN"}, {"kode": 271.0, "nama": "Majun", "kategori": "Item", "spesifikasi": "Majun", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 0.0, "stok_berjalan": -24, "stok_min": null, "status": "PESAN"}, {"kode": 272.0, "nama": "Speaker 6 inch", "kategori": "Electrical", "spesifikasi": "6 inch", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 0.0, "stok_berjalan": -21, "stok_min": null, "status": "PESAN"}, {"kode": 273.0, "nama": "Pernish BT300 Shikkens-5L", "kategori": "Cat", "spesifikasi": "BT300", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 0.0, "stok_berjalan": 1, "stok_min": null, "status": "AMAN"}, {"kode": 274.0, "nama": "Matabor 4mm", "kategori": "Item", "spesifikasi": "Matabor", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 13.0, "stok_berjalan": 22, "stok_min": null, "status": "AMAN"}, {"kode": 275.0, "nama": "Matabor 5mm", "kategori": "Item", "spesifikasi": "Matabor", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 45.0, "stok_berjalan": 41, "stok_min": null, "status": "AMAN"}, {"kode": 276.0, "nama": "Matabor 6mm", "kategori": "Item", "spesifikasi": "Matabor", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 5.0, "stok_berjalan": 2, "stok_min": null, "status": "AMAN"}, {"kode": 277.0, "nama": "Matabor 7mm", "kategori": "Item", "spesifikasi": "Matabor", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 7.0, "stok_berjalan": 22, "stok_min": null, "status": "AMAN"}, {"kode": 278.0, "nama": "Matabor 8mm", "kategori": "Item", "spesifikasi": "Matabor", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 11.0, "stok_berjalan": 20, "stok_min": null, "status": "AMAN"}, {"kode": 279.0, "nama": "Matabor 9mm", "kategori": "Item", "spesifikasi": "Matabor", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 5.0, "stok_berjalan": 4, "stok_min": null, "status": "AMAN"}, {"kode": 280.0, "nama": "Matabor 10mm", "kategori": "Item", "spesifikasi": "Matabor", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 3.0, "stok_berjalan": 15, "stok_min": null, "status": "AMAN"}, {"kode": 281.0, "nama": "Matabor 12mm", "kategori": "Item", "spesifikasi": "Matabor", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 10.0, "stok_berjalan": 6, "stok_min": null, "status": "AMAN"}, {"kode": 282.0, "nama": "Karet Balon H1", "kategori": "Item", "spesifikasi": "Karet", "satuan": "meter", "lokasi": "Gudang A", "stok_awal": 354.0, "stok_berjalan": 336, "stok_min": null, "status": "AMAN"}, {"kode": 283.0, "nama": "Holesaw 24mm", "kategori": "Item", "spesifikasi": "Holesaw", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 3.0, "stok_berjalan": 3, "stok_min": null, "status": "AMAN"}, {"kode": 284.0, "nama": "Holesaw 26mm", "kategori": "Item", "spesifikasi": "Holesaw", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 2.0, "stok_berjalan": 2, "stok_min": null, "status": "AMAN"}, {"kode": 285.0, "nama": "Holesaw 30mm", "kategori": "Item", "spesifikasi": "Holesaw", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 2.0, "stok_berjalan": 2, "stok_min": null, "status": "AMAN"}, {"kode": 286.0, "nama": "Hardener Comfort Clear", "kategori": "Item", "spesifikasi": "Cat", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 0.0, "stok_berjalan": -11, "stok_min": null, "status": "PESAN"}, {"kode": 287.0, "nama": "Cat Avanza Putih", "kategori": "Cat", "spesifikasi": "Cat", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 17.0, "stok_berjalan": 12, "stok_min": null, "status": "AMAN"}, {"kode": 288.0, "nama": "Pipa Hollow 4x4", "kategori": "Pipa", "spesifikasi": "4x4", "satuan": "pcs", "lokasi": "Luar", "stok_awal": 0.0, "stok_berjalan": 0, "stok_min": null, "status": "PESAN"}, {"kode": 289.0, "nama": "Baut JF 8x20", "kategori": "Baut", "spesifikasi": "8x20", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 1000.0, "stok_berjalan": 838, "stok_min": null, "status": "AMAN"}, {"kode": 290.0, "nama": "Cat Danaglos Dakar Yelow", "kategori": "Cat", "spesifikasi": "Dakar Yellow", "satuan": "kaleng", "lokasi": "Gudang A", "stok_awal": 0.0, "stok_berjalan": 5, "stok_min": null, "status": "AMAN"}, {"kode": 291.0, "nama": "Footstep AP", "kategori": "Item", "spesifikasi": "AP", "satuan": "set", "lokasi": "Gudang A", "stok_awal": 0.0, "stok_berjalan": 18, "stok_min": null, "status": "AMAN"}, {"kode": 292.0, "nama": "Karet Perseneling", "kategori": "Item", "spesifikasi": "Karet", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": 5, "stok_min": null, "status": "AMAN"}, {"kode": 293.0, "nama": "Reducer Slow 5L", "kategori": "Cat", "spesifikasi": "Reducer Slow", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 0.0, "stok_berjalan": 0, "stok_min": null, "status": "PESAN"}, {"kode": 294.0, "nama": "Lampu Alis", "kategori": "Item", "spesifikasi": "Lampu Alis", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": -4, "stok_min": null, "status": "PESAN"}, {"kode": 295.0, "nama": "Stoplamp JB2", "kategori": "Item", "spesifikasi": "Stoplamp", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": -4, "stok_min": null, "status": "PESAN"}, {"kode": 296.0, "nama": "Karpet Koin", "kategori": "Item", "spesifikasi": "Karpet", "satuan": "roll", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": -9, "stok_min": null, "status": "PESAN"}, {"kode": 297.0, "nama": "Clear BT300 ASG Set", "kategori": "Cat", "spesifikasi": "BT300", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": -20, "stok_min": null, "status": "PESAN"}, {"kode": 298.0, "nama": "Spion Turbo", "kategori": "Electrical", "spesifikasi": "Turbo", "satuan": "set", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": -2, "stok_min": null, "status": "PESAN"}, {"kode": 299.0, "nama": "Karpet Kayu", "kategori": "Item", "spesifikasi": "Karpet", "satuan": "roll", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": -1, "stok_min": null, "status": "PESAN"}, {"kode": 300.0, "nama": "Sensor Mundur", "kategori": "Electrical", "spesifikasi": "Sensor", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": -2, "stok_min": null, "status": "PESAN"}, {"kode": 301.0, "nama": "Dashcam", "kategori": "Electrical", "spesifikasi": "Kamera", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": -2, "stok_min": null, "status": "PESAN"}, {"kode": 302.0, "nama": "Arco", "kategori": "Gas", "spesifikasi": "Las", "satuan": "pcs", "lokasi": "Gudang Depan", "stok_awal": null, "stok_berjalan": 232, "stok_min": null, "status": "AMAN"}, {"kode": 303.0, "nama": "Pipa 4x4", "kategori": "Pipa", "spesifikasi": "Besi", "satuan": "ljr", "lokasi": "Gudang Depan", "stok_awal": null, "stok_berjalan": -572, "stok_min": null, "status": "PESAN"}, {"kode": 304.0, "nama": "UNP15x8", "kategori": "UNP", "spesifikasi": "Besi", "satuan": "ljr", "lokasi": "Gudang Depan", "stok_awal": null, "stok_berjalan": -47, "stok_min": null, "status": "PESAN"}, {"kode": 305.0, "nama": "UNP8x5", "kategori": "UNP", "spesifikasi": "Besi", "satuan": "ljr", "lokasi": "Gudang Depan", "stok_awal": null, "stok_berjalan": -51, "stok_min": null, "status": "PESAN"}, {"kode": 306.0, "nama": "Karet Sosis", "kategori": "Karet", "spesifikasi": "Karet", "satuan": "roll", "lokasi": "Gudang Depan", "stok_awal": null, "stok_berjalan": -26, "stok_min": null, "status": "PESAN"}, {"kode": 307.0, "nama": "UNP12", "kategori": "UNP", "spesifikasi": "Besi", "satuan": "ljr", "lokasi": "Gudang Depan", "stok_awal": null, "stok_berjalan": -6, "stok_min": null, "status": "PESAN"}, {"kode": 308.0, "nama": "Lampu Mayang", "kategori": "Lampu", "spesifikasi": "Lampu Mayang", "satuan": "set", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": -28, "stok_min": null, "status": "PESAN"}, {"kode": 309.0, "nama": "Karet Pintu", "kategori": "Karet", "spesifikasi": "Karet", "satuan": "roll", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": 8, "stok_min": null, "status": "AMAN"}, {"kode": 310.0, "nama": "Mata obeng", "kategori": "Obeng", "spesifikasi": "Obeng", "satuan": "set", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": 11, "stok_min": null, "status": "AMAN"}, {"kode": 311.0, "nama": "Partisi", "kategori": "Partisi", "spesifikasi": "Partisi", "satuan": "pcs", "lokasi": "Gudang B", "stok_awal": null, "stok_berjalan": 0, "stok_min": null, "status": "PESAN"}, {"kode": 312.0, "nama": "Baut JF M10x30", "kategori": "Baut JF M10x30", "spesifikasi": "Baut JF M10x30", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": 1000.0, "stok_berjalan": 980, "stok_min": null, "status": "AMAN"}, {"kode": 313.0, "nama": "O2 Isi", "kategori": "O2 Isi", "spesifikasi": "O2 Isi", "satuan": "tabung", "lokasi": "Gudang Luar", "stok_awal": null, "stok_berjalan": -4, "stok_min": null, "status": "PESAN"}, {"kode": 314.0, "nama": "Pipa 2x4", "kategori": "Pipa", "spesifikasi": "2x4", "satuan": "ljr", "lokasi": "Gudang Luar", "stok_awal": null, "stok_berjalan": 81, "stok_min": null, "status": "AMAN"}, {"kode": 315.0, "nama": "Lampu Sein Samping", "kategori": "Lampu", "spesifikasi": "Sein", "satuan": "set", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": -7, "stok_min": null, "status": "PESAN"}, {"kode": 316.0, "nama": "Kawat Sepi", "kategori": "Kawat", "spesifikasi": "Kawat Sepi", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": -16, "stok_min": null, "status": "PESAN"}, {"kode": 317.0, "nama": "Cutting Besar 14 inch", "kategori": "Cutting", "spesifikasi": "Cutting Besar", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": -18, "stok_min": null, "status": "PESAN"}, {"kode": 318.0, "nama": "Contact Tip", "kategori": "Las", "spesifikasi": "Contact Tip", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": 51, "stok_min": null, "status": "AMAN"}, {"kode": 319.0, "nama": "Pipa 4x8", "kategori": "Pipa", "spesifikasi": "4x8", "satuan": "ljr", "lokasi": "Gudang Luar", "stok_awal": null, "stok_berjalan": -123, "stok_min": null, "status": "PESAN"}, {"kode": 320.0, "nama": "Siku 5x5", "kategori": "Siku", "spesifikasi": "5x5", "satuan": "ljr", "lokasi": "Gudang Luar", "stok_awal": null, "stok_berjalan": 57, "stok_min": null, "status": "AMAN"}, {"kode": 321.0, "nama": "UNP 8x6", "kategori": "UNP", "spesifikasi": "UNP", "satuan": "ljr", "lokasi": "Gudang Luar", "stok_awal": null, "stok_berjalan": -17, "stok_min": null, "status": "PESAN"}, {"kode": 322.0, "nama": "UNP 15x6", "kategori": "UNP", "spesifikasi": "UNP", "satuan": "ljr", "lokasi": "Gudang Luar", "stok_awal": null, "stok_berjalan": 28, "stok_min": null, "status": "AMAN"}, {"kode": 323.0, "nama": "Acitilin", "kategori": "Acitilin", "spesifikasi": "Acitilin", "satuan": "tbg", "lokasi": "Gudang Luar", "stok_awal": null, "stok_berjalan": -5, "stok_min": null, "status": "PESAN"}, {"kode": 324.0, "nama": "Speaker Carman", "kategori": "Speaker", "spesifikasi": "Carman", "satuan": "set", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": -4, "stok_min": null, "status": "PESAN"}, {"kode": 325.0, "nama": "Kapur besi", "kategori": "Kapur", "spesifikasi": "Besi", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": 24, "stok_min": null, "status": "AMAN"}, {"kode": 326.0, "nama": "Benang Roll", "kategori": "Benang", "spesifikasi": "Putih", "satuan": "roll", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": 9, "stok_min": null, "status": "AMAN"}, {"kode": 327.0, "nama": "Baut M14x20", "kategori": "Baut", "spesifikasi": "M14x20", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": -114, "stok_min": null, "status": "PESAN"}, {"kode": 328.0, "nama": "Karpet Pohong", "kategori": "Karpet", "spesifikasi": "Pohong", "satuan": "roll", "lokasi": "Gudang C", "stok_awal": null, "stok_berjalan": -9, "stok_min": null, "status": "PESAN"}, {"kode": 329.0, "nama": "Baut M14x5", "kategori": "Baut", "spesifikasi": "M14x5", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": -1107, "stok_min": null, "status": "PESAN"}, {"kode": 330.0, "nama": "Pipa 4x2", "kategori": "Pipa", "spesifikasi": "4x2", "satuan": "ljr", "lokasi": "Gudang Luar", "stok_awal": null, "stok_berjalan": -30, "stok_min": null, "status": "PESAN"}, {"kode": 331.0, "nama": "Speaker Greenbull", "kategori": "Speaker", "spesifikasi": "Greenbull", "satuan": "set", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": 14, "stok_min": null, "status": "AMAN"}, {"kode": 332.0, "nama": "Superwhite ESAI 2K", "kategori": "Cat", "spesifikasi": "Superwhite 2K", "satuan": "kaleng", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": -1, "stok_min": null, "status": "PESAN"}, {"kode": 333.0, "nama": "Baut M8x50", "kategori": "Baut", "spesifikasi": "M8x50", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": -266, "stok_min": null, "status": "PESAN"}, {"kode": 334.0, "nama": "Plat Galvanil 1,2mm", "kategori": "Plat", "spesifikasi": "Galvanil 1,2mm", "satuan": "lembar", "lokasi": "Gudang Luar", "stok_awal": null, "stok_berjalan": -2, "stok_min": null, "status": "PESAN"}, {"kode": 335.0, "nama": "Safety Belt", "kategori": "Sabuk", "spesifikasi": "Sabuk Pengaman", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": 33, "stok_min": null, "status": "AMAN"}, {"kode": 336.0, "nama": "Tip Holder", "kategori": "Tip Holder", "spesifikasi": "Tip Holder", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": 44, "stok_min": null, "status": "AMAN"}, {"kode": 337.0, "nama": "Insulator", "kategori": "Insulator", "spesifikasi": "Insulator", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": 92, "stok_min": null, "status": "AMAN"}, {"kode": 338.0, "nama": "Kawel Besi Uk 50", "kategori": "Kawel", "spesifikasi": "Kawel", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": -163, "stok_min": null, "status": "PESAN"}, {"kode": 339.0, "nama": "Nozzle", "kategori": "Nozzle", "spesifikasi": "Nozzle", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": 40, "stok_min": null, "status": "AMAN"}, {"kode": 340.0, "nama": "PTO Engine", "kategori": "PTO", "spesifikasi": "PTO ENGINE", "satuan": "box", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": 16, "stok_min": null, "status": "AMAN"}, {"kode": 341.0, "nama": "Stoplamp Travego Set", "kategori": "Stoplamp", "spesifikasi": "Merah 2, Amber 2, White 2", "satuan": "set", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": 23, "stok_min": null, "status": "AMAN"}, {"kode": 342.0, "nama": "Karet Bantalan Chassis", "kategori": "Karet", "spesifikasi": "Karet Chassis", "satuan": "Roll", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": -91, "stok_min": null, "status": "PESAN"}, {"kode": 343.0, "nama": "Keramik", "kategori": "Keramik", "spesifikasi": "Keramik", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": -44, "stok_min": null, "status": "PESAN"}, {"kode": 344.0, "nama": "Antena Radio", "kategori": "Antena", "spesifikasi": "Antena", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": -6, "stok_min": null, "status": "PESAN"}, {"kode": 345.0, "nama": "Sarung Tangan", "kategori": "Sarung Tangan", "spesifikasi": "Sarung Tangan", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": 125, "stok_min": null, "status": "AMAN"}, {"kode": 346.0, "nama": "CO2", "kategori": "CO2", "spesifikasi": "CO2", "satuan": "tabung", "lokasi": "Gudang Luar", "stok_awal": null, "stok_berjalan": -3, "stok_min": null, "status": "PESAN"}, {"kode": 347.0, "nama": "Plat 5mm Potongan", "kategori": "Plat", "spesifikasi": "Plat Kecil 5mm", "satuan": "lembar", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": -18, "stok_min": null, "status": "PESAN"}, {"kode": 348.0, "nama": "Mic Bostron Mic Berdiri", "kategori": "Mic", "spesifikasi": "Mic", "satuan": "Set", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": 1, "stok_min": null, "status": "AMAN"}, {"kode": 349.0, "nama": "Amplifier Media Digital", "kategori": "Amplifier Media Digital", "spesifikasi": "Amplifier Media Digital", "satuan": "Set", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": 1, "stok_min": null, "status": "AMAN"}, {"kode": 350.0, "nama": "Pelipit Kaca", "kategori": "Pelipit Kaca", "spesifikasi": "Pelipit", "satuan": "Kaca", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": 2, "stok_min": null, "status": "AMAN"}, {"kode": 351.0, "nama": "Baut M10x17 PTO", "kategori": "Baut PTO", "spesifikasi": "PTO ENGINE", "satuan": "PTO", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": 11, "stok_min": null, "status": "AMAN"}, {"kode": 352.0, "nama": "Kawat Las", "kategori": "Kawat Las", "spesifikasi": "Kawat Las", "satuan": "Roll", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": 54, "stok_min": null, "status": "AMAN"}, {"kode": 353.0, "nama": "Engsel Pintu Bus", "kategori": "Engsel Pintu", "spesifikasi": "Engsel Pintu Bus", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": -8, "stok_min": null, "status": "PESAN"}, {"kode": 354.0, "nama": "Mur Baut M8x100", "kategori": "Mur Baut", "spesifikasi": "Mur Baut", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": -54, "stok_min": null, "status": "PESAN"}, {"kode": 355.0, "nama": "Radio Rig", "kategori": "Radio", "spesifikasi": "Radio", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": -1, "stok_min": null, "status": "PESAN"}, {"kode": 356.0, "nama": "Plat Bracket Chassis", "kategori": "Plat Bracket", "spesifikasi": "Plat Bracket", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": -108, "stok_min": null, "status": "PESAN"}, {"kode": 357.0, "nama": "UNP100", "kategori": "UNP", "spesifikasi": "UNP100", "satuan": "ljr", "lokasi": "Gudang Luar", "stok_awal": null, "stok_berjalan": -1, "stok_min": null, "status": "PESAN"}, {"kode": 358.0, "nama": "Dempul Alfa 3KG", "kategori": "Dempul", "spesifikasi": "Dempul 3KG", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": 562, "stok_min": null, "status": "AMAN"}, {"kode": 359.0, "nama": "Matabor 14mm", "kategori": "Matabor 14mm", "spesifikasi": "Matabor 14mm", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": 6, "stok_min": null, "status": "AMAN"}, {"kode": 360.0, "nama": "Kabel Massa Hitam", "kategori": "Kabel massa Hitam", "spesifikasi": "Kabel Massa Hitam", "satuan": "roll", "lokasi": "Gudang A ", "stok_awal": null, "stok_berjalan": -123, "stok_min": null, "status": "PESAN"}, {"kode": 361.0, "nama": "Traffic Cone", "kategori": "Traffic Cone", "spesifikasi": "Traffic Cone", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": 12, "stok_min": null, "status": "AMAN"}, {"kode": 362.0, "nama": "Ganjal Ban", "kategori": "Ganjal Ban", "spesifikasi": "Ganjal Ban", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": 4, "stok_min": null, "status": "AMAN"}, {"kode": 363.0, "nama": "Klem Stainless 3\"", "kategori": "Klem Stainless 3\"", "spesifikasi": "Klem Stainless 3\"", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": 4, "stok_min": null, "status": "AMAN"}, {"kode": 364.0, "nama": "Plat Bordes 1mm", "kategori": "Plat Bordes 1mm", "spesifikasi": "Plat Bordes 1mm", "satuan": "lembar", "lokasi": "Gudang Luar", "stok_awal": null, "stok_berjalan": 117, "stok_min": null, "status": "AMAN"}, {"kode": 365.0, "nama": "Plat Bordes Alumunium 3mm", "kategori": "Plat Bordes Alumunium 3mm", "spesifikasi": "Plat Bordes Alumunium 3mm", "satuan": "lembar", "lokasi": "Gudang Luar", "stok_awal": null, "stok_berjalan": 34, "stok_min": null, "status": "AMAN"}, {"kode": 366.0, "nama": "Buat M10x100", "kategori": "M10x100", "spesifikasi": "M10x100", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": -72, "stok_min": null, "status": "PESAN"}, {"kode": 367.0, "nama": "Plat Galvanil 2mm", "kategori": "Galvanil 2mm", "spesifikasi": "Galvanil 2mm", "satuan": "lembar", "lokasi": "Gudang Luar", "stok_awal": null, "stok_berjalan": -13, "stok_min": null, "status": "PESAN"}, {"kode": 368.0, "nama": "Dioda 3A", "kategori": "Dioda 3A", "spesifikasi": "Dioda 3A", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": 50, "stok_min": null, "status": "AMAN"}, {"kode": 369.0, "nama": "Mic Meja", "kategori": "Mic Meja", "spesifikasi": "Mic Meja", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": 3, "stok_min": null, "status": "AMAN"}, {"kode": 370.0, "nama": "Pipa Kuningan", "kategori": "Pipa AC Kuningan", "spesifikasi": "Pipa AC Kuningan", "satuan": "lonjor", "lokasi": "Gudang Luar", "stok_awal": null, "stok_berjalan": 50, "stok_min": null, "status": "AMAN"}, {"kode": 371.0, "nama": "Brostel CB100A", "kategori": "Brostel CB100A", "spesifikasi": "Brostel CB100A", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": 12, "stok_min": null, "status": "AMAN"}, {"kode": 372.0, "nama": "Plus Reducer Slow - 5L", "kategori": "Plus Reducer Slow", "spesifikasi": "Plus Reducer Slow", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": 1, "stok_min": null, "status": "AMAN"}, {"kode": 373.0, "nama": "Selang Pneumatic", "kategori": "Selang Pneumatic", "spesifikasi": "Selang Pneumatic", "satuan": "roll", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": 1, "stok_min": null, "status": "AMAN"}, {"kode": 374.0, "nama": "Lock Dashboard AP", "kategori": "Lock Dashboard AP", "spesifikasi": "Lock Dashboard AP", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": 130, "stok_min": null, "status": "AMAN"}, {"kode": 375.0, "nama": "Stoplamp Ford Ranger", "kategori": "Stoplamp Ford Ranger", "spesifikasi": "Stoplamp Ford Ranger", "satuan": "set", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": 2, "stok_min": null, "status": "AMAN"}, {"kode": 376.0, "nama": "UNP5", "kategori": "UNP5", "spesifikasi": "UNP5", "satuan": "ljr", "lokasi": "Gudang Luar", "stok_awal": null, "stok_berjalan": -11, "stok_min": null, "status": "PESAN"}, {"kode": 377.0, "nama": "Cat Yellow Leaf", "kategori": "Cat Yellow Leaf", "spesifikasi": "Cat Yellow Leaf", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": -12, "stok_min": null, "status": "PESAN"}, {"kode": 378.0, "nama": "Cat Superwhite NC", "kategori": "Cat Superwhite NC", "spesifikasi": "Cat Superwhite NC", "satuan": "klg", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": -18, "stok_min": null, "status": "PESAN"}, {"kode": 379.0, "nama": "Thinner Primer Maxpro", "kategori": "Thinner Primer Maxpro", "spesifikasi": "Thinner Primer Maxpro", "satuan": "klg", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": -81, "stok_min": null, "status": "PESAN"}, {"kode": 380.0, "nama": "Thinner BT 100", "kategori": "Thinner BT 100", "spesifikasi": "Thinner BT 100", "satuan": "klg", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": -1, "stok_min": null, "status": "PESAN"}, {"kode": 381.0, "nama": "Kepet 6 roda", "kategori": "Kepet 6 roda", "spesifikasi": "Kepet 6 roda", "satuan": "Kepet 6 roda", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": -4, "stok_min": null, "status": "PESAN"}, {"kode": 382.0, "nama": "Kepet 4 roda", "kategori": "Kepet 4 roda", "spesifikasi": "Kepet 4 roda", "satuan": "Kepet 4 roda", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": -36, "stok_min": null, "status": "PESAN"}, {"kode": 383.0, "nama": "First Aid Kit P3K", "kategori": "First Aid Kit P3K", "spesifikasi": "First Aid Kit P3K", "satuan": "First Aid Kit P3K", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": -1, "stok_min": null, "status": "PESAN"}, {"kode": 384.0, "nama": "Door lock", "kategori": "Door lock", "spesifikasi": "Door lock", "satuan": "Door lock", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": -19, "stok_min": null, "status": "PESAN"}, {"kode": 385.0, "nama": "Door Steker", "kategori": "Door Steker", "spesifikasi": "Door Steker", "satuan": "Door Steker", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": -4, "stok_min": null, "status": "PESAN"}, {"kode": 386.0, "nama": "Dempul Alfa 4KG", "kategori": "Dempul Alfa 4KG", "spesifikasi": "Dempul Alfa 4KG", "satuan": "Dempul Alfa 4KG", "lokasi": "gudang A", "stok_awal": null, "stok_berjalan": -12, "stok_min": null, "status": "PESAN"}, {"kode": 387.0, "nama": "BT300 Hardener 5L", "kategori": "BT300 Hardener 5L", "spesifikasi": "BT300 Hardener 5L", "satuan": "BT300 Hardener 5L", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": -7, "stok_min": null, "status": "PESAN"}, {"kode": 388.0, "nama": "TJ Super White 2K 5L", "kategori": "TJ Super White 2K 5L", "spesifikasi": "TJ Super White 2K 5L", "satuan": "TJ Super White 2K 5L", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": 1, "stok_min": null, "status": "AMAN"}, {"kode": 389.0, "nama": "TJ Super White 2K 3L", "kategori": "TJ Super White 2K 3L", "spesifikasi": "TJ Super White 2K 3L", "satuan": "TJ Super White 2K 3L", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": 1, "stok_min": null, "status": "AMAN"}, {"kode": 390.0, "nama": "BT Hardener Slow 1L", "kategori": "BT Hardener Slow 1L", "spesifikasi": "BT Hardener Slow 1L", "satuan": "BT Hardener Slow 1L", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": -8, "stok_min": null, "status": "PESAN"}, {"kode": 391.0, "nama": "Plat Bordes 4mm", "kategori": "Plat Bordes 4mm", "spesifikasi": "Plat Bordes 4mm", "satuan": "Plat Bordes 4mm", "lokasi": "Gudang Luar", "stok_awal": null, "stok_berjalan": -10, "stok_min": null, "status": "PESAN"}, {"kode": 392.0, "nama": "Jok Manhoul 60 Seat", "kategori": "Jok Manhoul 60 Seat", "spesifikasi": "Jok Manhoul 60 Seat", "satuan": "set", "lokasi": "Gudang Luar", "stok_awal": null, "stok_berjalan": 83, "stok_min": null, "status": "AMAN"}, {"kode": 393.0, "nama": "Jok Medium Bus 0667", "kategori": "Jok Medium Bus 0667", "spesifikasi": "Jok Medium Bus 0667", "satuan": "set", "lokasi": "Gudang Luar", "stok_awal": null, "stok_berjalan": 1, "stok_min": null, "status": "AMAN"}, {"kode": 394.0, "nama": "Set First Class Clear 7200", "kategori": "Set First Class Clear 7200", "spesifikasi": "Set First Class Clear 7200", "satuan": "set", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": -5, "stok_min": null, "status": "PESAN"}, {"kode": 395.0, "nama": "Bracket Pipa Cangkir", "kategori": "Bracket Pipa Cangkir", "spesifikasi": "Bracket Pipa Cangkir", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": 150, "stok_min": null, "status": "AMAN"}, {"kode": 396.0, "nama": "Bracket Pipa Buntu", "kategori": "Bracket Pipa Buntu", "spesifikasi": "Bracket Pipa Buntu", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": 62, "stok_min": null, "status": "AMAN"}, {"kode": 397.0, "nama": "Kain Oscar Abu2", "kategori": "Kain Oscar Abu2", "spesifikasi": "Kain Oscar Abu2", "satuan": "roll", "lokasi": "Gudang Luar", "stok_awal": null, "stok_berjalan": -3, "stok_min": null, "status": "PESAN"}, {"kode": 398.0, "nama": "Kain Miray Grey", "kategori": "Kain Miray Grey", "spesifikasi": "Kain Miray Grey", "satuan": "meter", "lokasi": "Gudang Luar", "stok_awal": null, "stok_berjalan": 237, "stok_min": null, "status": "AMAN"}, {"kode": 399.0, "nama": "Sealent Hitam", "kategori": "Sealent Hitam", "spesifikasi": "Sealent Hitam", "satuan": "sosis", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": -23, "stok_min": null, "status": "PESAN"}, {"kode": 400.0, "nama": "Clear Maxpro", "kategori": "Clear Maxpro", "spesifikasi": "Clear Maxpro", "satuan": "liter", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": -142, "stok_min": null, "status": "PESAN"}, {"kode": 401.0, "nama": "Thinner Maxpro", "kategori": "Thinner Maxpro", "spesifikasi": "Thinner Maxpro", "satuan": "liter", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": -236, "stok_min": null, "status": "PESAN"}, {"kode": 402.0, "nama": "Lis Bagasi Baru", "kategori": "Lis Bagasi Baru", "spesifikasi": "Lis Bagasi Baru", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": -1, "stok_min": null, "status": "PESAN"}, {"kode": 403.0, "nama": "Pigmen Hitam", "kategori": "Pigmen Hitam", "spesifikasi": "Pigmen Hitam", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": -3, "stok_min": null, "status": "PESAN"}, {"kode": 404.0, "nama": "Led Roll Merah 24V", "kategori": "Led Roll Merah 24V", "spesifikasi": "Led Roll Merah 24V", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": 60, "stok_min": null, "status": "AMAN"}, {"kode": 405.0, "nama": "Thinner 708", "kategori": "Thinner 708", "spesifikasi": "Thinner 708", "satuan": "ltr", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": 68, "stok_min": null, "status": "AMAN"}, {"kode": 406.0, "nama": "Thinner 719", "kategori": "Thinner 719", "spesifikasi": "Thinner 719", "satuan": "ltr", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": -2, "stok_min": null, "status": "PESAN"}, {"kode": 407.0, "nama": "Clear Coat 762", "kategori": "Clear Coat 762", "spesifikasi": "Clear Coat 762", "satuan": "set", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": 6, "stok_min": null, "status": "AMAN"}, {"kode": 408.0, "nama": "Pipa Hollow 1,5x1,5", "kategori": "Pipa Hollow 1,5x1,5", "spesifikasi": "Pipa Hollow 1,5x1,5", "satuan": "ljr", "lokasi": "Gudang Luar", "stok_awal": null, "stok_berjalan": 0, "stok_min": null, "status": "PESAN"}, {"kode": 409.0, "nama": "Chassis Bracket Plat L", "kategori": "Chassis Bracket Plat L", "spesifikasi": "Chassis Bracket Plat L", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": 72, "stok_min": null, "status": "AMAN"}, {"kode": 410.0, "nama": "Bracket Pipa Bolong", "kategori": "Bracket Pipa Bolong", "spesifikasi": "Bracket Pipa Bolong", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": -27, "stok_min": null, "status": "PESAN"}, {"kode": 411.0, "nama": "Pipa Stainless", "kategori": "Pipa Stainless", "spesifikasi": "Pipa Stainless", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": 23, "stok_min": null, "status": "AMAN"}, {"kode": 412.0, "nama": "Regulator Arco", "kategori": "Regulator Arco", "spesifikasi": "Regulator Arco", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": -1, "stok_min": null, "status": "PESAN"}, {"kode": 413.0, "nama": "Maxpro Hardener", "kategori": "Maxpro Hardener", "spesifikasi": "Maxpro Hardener", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": -14, "stok_min": null, "status": "PESAN"}, {"kode": 414.0, "nama": "Maxpro Primer", "kategori": "MXPHRD", "spesifikasi": "Maxpro Primer", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": -12, "stok_min": null, "status": "PESAN"}, {"kode": 415.0, "nama": "Plat Hitam 1mm", "kategori": "PLT", "spesifikasi": "Hitam", "satuan": "lbr", "lokasi": "Gudang Luar", "stok_awal": null, "stok_berjalan": -62, "stok_min": null, "status": "PESAN"}, {"kode": 416.0, "nama": "Partisi Baru", "kategori": "PTISIBARU", "spesifikasi": "Patisi Baru", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": 4, "stok_min": null, "status": "AMAN"}, {"kode": 417.0, "nama": "Safety Belt Manual", "kategori": "SFTBLTMNL", "spesifikasi": "Safety Belt", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": 500, "stok_min": null, "status": "AMAN"}, {"kode": 418.0, "nama": "Safety Belt Otomatis", "kategori": "SOT", "spesifikasi": "Safety Belt", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": 250, "stok_min": null, "status": "AMAN"}, {"kode": 419.0, "nama": "Dempul 6KG", "kategori": "DPL", "spesifikasi": "Dempul 6kg", "satuan": "pcs", "lokasi": "Gudang A", "stok_awal": null, "stok_berjalan": 300, "stok_min": null, "status": "AMAN"}];
+const SEED_UNIT_MASUK = [{"no": 1.0, "customer": "PT Nenggapratama Internusa ", "merk": "Hino GB 150 5.5", "jenis": "Chasis ", "no_rangka": "MJEYCP5F7S9800667", "no_mesin": "N04CWKJ11224", "pemborong": "Marsono ", "tgl_masuk": "2026-01-21T00:00:00", "ket": "Medium Bus", "nomor_nb": "NB 19", "tgl_keluar": null, "no_spk": null}, {"no": 2.0, "customer": "PT Kayong Alumunium Nusantara ", "merk": "Hino FMJW 28", "jenis": "Chasis ", "no_rangka": "MJEFM8JW2SJX14004", "no_mesin": "J08EWDJ48849", "pemborong": "Slamet ", "tgl_masuk": "2026-01-23T00:00:00", "ket": "Manhaul", "nomor_nb": "NB 01", "tgl_keluar": null, "no_spk": null}, {"no": 3.0, "customer": "PT Kayong Alumunium Nusantara ", "merk": "Hino FMJW 28", "jenis": "Chasis ", "no_rangka": "MJEFM8JW2SJX14005", "no_mesin": "J08EWDJ48950", "pemborong": "Heru", "tgl_masuk": "2026-01-23T00:00:00", "ket": "Manhaul", "nomor_nb": "NB 02", "tgl_keluar": null, "no_spk": null}, {"no": 4.0, "customer": "PT Kayong Alumunium Nusantara ", "merk": "Hino FMJW 28", "jenis": "Chasis ", "no_rangka": "MJEFM8JW2SJX14007", "no_mesin": "J08EWDJ48852", "pemborong": "Heru", "tgl_masuk": "2026-01-23T00:00:00", "ket": "Manhaul", "nomor_nb": "NB 04", "tgl_keluar": null, "no_spk": null}, {"no": 5.0, "customer": "PT Kayong Alumunium Nusantara ", "merk": "Hino FMJW 28", "jenis": "Chasis ", "no_rangka": "MJEFM8JW2SJX14016", "no_mesin": "J08EWDJ48861", "pemborong": "Derry", "tgl_masuk": "2026-01-23T00:00:00", "ket": "Manhaul", "nomor_nb": "NB 06", "tgl_keluar": null, "no_spk": null}, {"no": 6.0, "customer": "PT Kayong Alumunium Nusantara ", "merk": "Hino FMJW 28", "jenis": "Chasis ", "no_rangka": "MJEFM8JW2SJX14017", "no_mesin": "J08EWDJ48862", "pemborong": "Slamet ", "tgl_masuk": "2026-01-23T00:00:00", "ket": "Manhaul", "nomor_nb": "NB 07", "tgl_keluar": null, "no_spk": null}, {"no": 7.0, "customer": "PT Kayong Alumunium Nusantara ", "merk": "Hino FMJW 28", "jenis": "Chasis ", "no_rangka": "MJEFM8JW2SJX14020", "no_mesin": "J08EWDJ48883", "pemborong": "Heru ", "tgl_masuk": "2026-01-23T00:00:00", "ket": "Manhaul", "nomor_nb": "NB 08", "tgl_keluar": null, "no_spk": null}, {"no": 8.0, "customer": "PT Kayong Alumunium Nusantara ", "merk": "Hino FMJW 28", "jenis": "Chasis ", "no_rangka": "MJEFM8JW2SJX14026", "no_mesin": "J08EWDJ48895", "pemborong": "Marsono ", "tgl_masuk": "2026-01-23T00:00:00", "ket": "Manhaul", "nomor_nb": "NB 12", "tgl_keluar": null, "no_spk": null}, {"no": 9.0, "customer": "PT Kayong Alumunium Nusantara ", "merk": "Hino FMJW 28", "jenis": "Chasis ", "no_rangka": "MJEFM8JW2SJX14032", "no_mesin": "J08EWDJ48905", "pemborong": "Marsono ", "tgl_masuk": "2026-01-23T00:00:00", "ket": "Manhaul", "nomor_nb": "NB 17", "tgl_keluar": null, "no_spk": null}, {"no": 10.0, "customer": "PT Kayong Alumunium Nusantara ", "merk": "Hino FMJW 28", "jenis": "Chasis ", "no_rangka": "MJEFM8JW2SJX14033", "no_mesin": "J08EWDJ48907", "pemborong": "Derry", "tgl_masuk": "2026-01-23T00:00:00", "ket": "Manhaul", "nomor_nb": "NB 18", "tgl_keluar": null, "no_spk": null}, {"no": 11.0, "customer": "PT Kayong Alumunium Nusantara ", "merk": "Hino FMJW 28", "jenis": "Chasis ", "no_rangka": "MJEFM8JW2SJX14006", "no_mesin": "J08EWDJ48851", "pemborong": "Slamet ", "tgl_masuk": "2026-01-23T00:00:00", "ket": "Manhaul", "nomor_nb": "NB 03", "tgl_keluar": null, "no_spk": null}, {"no": 12.0, "customer": "PT Kayong Alumunium Nusantara ", "merk": "Hino FMJW 28", "jenis": "Chasis ", "no_rangka": "MJEFM8JW2SJX14009", "no_mesin": "J08EWDJ48954", "pemborong": "Heru ", "tgl_masuk": "2026-01-23T00:00:00", "ket": "Manhaul", "nomor_nb": "NB 05", "tgl_keluar": null, "no_spk": null}, {"no": 13.0, "customer": "PT Kayong Alumunium Nusantara ", "merk": "Hino FMJW 28", "jenis": "Chasis ", "no_rangka": "MJEFM8JW2SJX14021", "no_mesin": "J08EWDJ48884", "pemborong": "Heru ", "tgl_masuk": "2026-01-23T00:00:00", "ket": "Manhaul", "nomor_nb": "NB 09", "tgl_keluar": null, "no_spk": null}, {"no": 14.0, "customer": "PT Kayong Alumunium Nusantara ", "merk": "Hino FMJW 28", "jenis": "Chasis ", "no_rangka": "MJEFM8JW2SJX14023", "no_mesin": "J08EWDJ48887", "pemborong": "Heru", "tgl_masuk": "2026-01-23T00:00:00", "ket": "Manhaul", "nomor_nb": "NB 10", "tgl_keluar": null, "no_spk": null}, {"no": 15.0, "customer": "PT Kayong Alumunium Nusantara ", "merk": "Hino FMJW 28", "jenis": "Chasis ", "no_rangka": "MJEFM8JW2SJX14025", "no_mesin": "J08EWDJ48894", "pemborong": "Slamet ", "tgl_masuk": "2026-01-23T00:00:00", "ket": "Manhaul", "nomor_nb": "NB 11", "tgl_keluar": null, "no_spk": null}, {"no": 16.0, "customer": "PT Kayong Alumunium Nusantara ", "merk": "Hino FMJW 28", "jenis": "Chasis ", "no_rangka": "MJEFM8JW2SJX14027", "no_mesin": "J08EWDJ48896", "pemborong": "Slamet ", "tgl_masuk": "2026-01-23T00:00:00", "ket": "Manhaul", "nomor_nb": "NB 13", "tgl_keluar": null, "no_spk": null}, {"no": 17.0, "customer": "PT Kayong Alumunium Nusantara ", "merk": "Hino FMJW 28", "jenis": "Chasis ", "no_rangka": "MJEFM8JW2SJX14028", "no_mesin": "J08EWDJ48897", "pemborong": "Derry", "tgl_masuk": "2026-01-23T00:00:00", "ket": "Manhaul", "nomor_nb": "NB 14", "tgl_keluar": null, "no_spk": null}, {"no": 18.0, "customer": "PT Kayong Alumunium Nusantara ", "merk": "Hino FMJW 28", "jenis": "Chasis ", "no_rangka": "MJEFM8JW2SJX14029", "no_mesin": "J08EWDJ48998", "pemborong": "Slamet ", "tgl_masuk": "2026-01-23T00:00:00", "ket": "Manhaul", "nomor_nb": "NB 15", "tgl_keluar": null, "no_spk": null}, {"no": 19.0, "customer": "PT Kayong Alumunium Nusantara ", "merk": "Hino FMJW 28", "jenis": "Chasis ", "no_rangka": "MJEFM8JW2SJX14030", "no_mesin": "J08EWDJ48899", "pemborong": "Marsono", "tgl_masuk": "2026-01-23T00:00:00", "ket": "Manhaul", "nomor_nb": "NB 16", "tgl_keluar": null, "no_spk": null}, {"no": 20.0, "customer": "PT Trimegah Bangun Persada Tbk ", "merk": "Hino FM 28 JD ", "jenis": "Chasis ", "no_rangka": "MJEFM8JN2SJX30073 ", "no_mesin": "J08EWDJ47267", "pemborong": "Heru", "tgl_masuk": "2026-01-29T00:00:00", "ket": "Manhaul", "nomor_nb": "NB 21", "tgl_keluar": null, "no_spk": null}, {"no": 21.0, "customer": "PT Trimegah Bangun Persada Tbk ", "merk": "Hino FM 28 JD ", "jenis": "Chasis ", "no_rangka": "MJEFM8JN2SJX30074", "no_mesin": "J08EWDJ47269", "pemborong": "Heru", "tgl_masuk": "2026-01-29T00:00:00", "ket": "Manhaul", "nomor_nb": "NB 22", "tgl_keluar": null, "no_spk": null}, {"no": 22.0, "customer": "PT Trimegah Bangun Persada Tbk ", "merk": "Hino FM 28 JD ", "jenis": "Chasis ", "no_rangka": "MJEFM8JN2SJX30082 ", "no_mesin": "J08EWDJ47294", "pemborong": "Heru", "tgl_masuk": "2026-01-29T00:00:00", "ket": "Manhaul", "nomor_nb": "NB 23", "tgl_keluar": null, "no_spk": null}, {"no": 23.0, "customer": "PT Trimegah Bangun Persada Tbk ", "merk": "Hino FM 28 JD ", "jenis": "Chasis ", "no_rangka": "MJEFM8JN2SJX30083", "no_mesin": "J08EWDJ47298", "pemborong": "Heru", "tgl_masuk": "2026-01-29T00:00:00", "ket": "Manhaul", "nomor_nb": "NB 24", "tgl_keluar": null, "no_spk": null}, {"no": 24.0, "customer": "PT Trimegah Bangun Persada Tbk ", "merk": "Hino FM 28 JD ", "jenis": "Chasis ", "no_rangka": "MJEFM8JN2SJX30084", "no_mesin": "J08EWDJ47300", "pemborong": "Heru", "tgl_masuk": "2026-01-29T00:00:00", "ket": "Manhaul", "nomor_nb": "NB 25", "tgl_keluar": null, "no_spk": null}, {"no": 25.0, "customer": "PT Gane Tambang Sentosa ", "merk": "Hino FM 260 JD ", "jenis": "Chasis ", "no_rangka": "MJEFM8JN2SJX29840", "no_mesin": "J08EWDJ46585", "pemborong": "Heru", "tgl_masuk": "2026-01-31T00:00:00", "ket": "Manhaul", "nomor_nb": "NB 26", "tgl_keluar": null, "no_spk": null}, {"no": 26.0, "customer": "Yayasan Majlis Tafsir Surakarta ", "merk": "Mits L300", "jenis": "Chasis ", "no_rangka": "MK2L0PUMZTJ000859", "no_mesin": "4N14UBC1932", "pemborong": "Heru", "tgl_masuk": "2026-02-23T00:00:00", "ket": "Mobil Pelayanan Kesehatan", "nomor_nb": "NB 27", "tgl_keluar": null, "no_spk": null}, {"no": 27.0, "customer": "Rokhmawan ", "merk": "Izusu Traga ", "jenis": "Microbus ", "no_rangka": "MHCPHR54CRJ556158", "no_mesin": null, "pemborong": "Harian ", "tgl_masuk": "2026-03-04T00:00:00", "ket": "Microbus ", "nomor_nb": "NB 28", "tgl_keluar": null, "no_spk": null}, {"no": 28.0, "customer": "PT Kayong Alumunium Nusantara ", "merk": "Hino FMJW 28", "jenis": "Chasis ", "no_rangka": "MJEFM8JW2TJX14122", "no_mesin": "J08EWDJ49688", "pemborong": "Slamet ", "tgl_masuk": "2026-03-12T00:00:00", "ket": "Manhaul", "nomor_nb": "NB 29", "tgl_keluar": null, "no_spk": null}, {"no": 29.0, "customer": "PT Kayong Alumunium Nusantara ", "merk": "Hino FMJW 28", "jenis": "Chasis ", "no_rangka": "MJEFM8JW2TJX14123", "no_mesin": "J08EWDJ49690", "pemborong": "Heru", "tgl_masuk": "2026-03-12T00:00:00", "ket": "Manhaul", "nomor_nb": "NB 30", "tgl_keluar": null, "no_spk": null}, {"no": 30.0, "customer": "PT Kayong Alumunium Nusantara ", "merk": "Hino FMJW 28", "jenis": "Chasis ", "no_rangka": "MJEFM8JW2TJX14124", "no_mesin": "J08EWDJ49691", "pemborong": "Derry ", "tgl_masuk": "2026-03-12T00:00:00", "ket": "Manhaul", "nomor_nb": "NB 31", "tgl_keluar": null, "no_spk": null}, {"no": 31.0, "customer": "PT Hasta Panca Mandiri Utama", "merk": "Hino FMJD 28", "jenis": "Chasis ", "no_rangka": "MJEFM8JN2SJX30426", "no_mesin": "J08EWDJ34816", "pemborong": "Heru ", "tgl_masuk": "2026-03-13T00:00:00", "ket": "Manhaul", "nomor_nb": "NB 32", "tgl_keluar": null, "no_spk": null}, {"no": 32.0, "customer": "Mandau Berlian Sejati ", "merk": "Mits FE 84 ", "jenis": "Chasis ", "no_rangka": "MHMFE84ENSJ003427", "no_mesin": "4V21-A07506", "pemborong": "Marsono", "tgl_masuk": "2026-04-02T00:00:00", "ket": "Medium Bus", "nomor_nb": "NB 33", "tgl_keluar": null, "no_spk": null}, {"no": 33.0, "customer": "Mandau Berlian Sejati ", "merk": "Mits FE 84 ", "jenis": "Chasis ", "no_rangka": "MHMFE84ENSJ003428", "no_mesin": "4V21-A07511", "pemborong": "Marsono", "tgl_masuk": "2026-04-02T00:00:00", "ket": "Medium Bus", "nomor_nb": "NB 34", "tgl_keluar": null, "no_spk": null}, {"no": 34.0, "customer": "Mandau Berlian Sejati ", "merk": "Mits FE 84 ", "jenis": "Chasis ", "no_rangka": "MHMFE84ENSJ003429", "no_mesin": "4V21-A07507", "pemborong": "Ambon", "tgl_masuk": "2026-04-03T00:00:00", "ket": "Medium Bus", "nomor_nb": "NB 35", "tgl_keluar": null, "no_spk": null}, {"no": 35.0, "customer": "Astra Isuzu Kendari ", "merk": "Izusu NQR ", "jenis": "Chasis ", "no_rangka": "MHCN1R81LSJ135120", "no_mesin": "4HL1G135120", "pemborong": "Marsono", "tgl_masuk": "2026-04-05T00:00:00", "ket": "Medium Bus", "nomor_nb": "NB 36", "tgl_keluar": null, "no_spk": null}, {"no": 36.0, "customer": "Aswani Hasyim ", "merk": "Izusu NQR ", "jenis": "Chasis ", "no_rangka": "MHCN1R81LSJ135666", "no_mesin": "4HL1G135666", "pemborong": "Slamet ", "tgl_masuk": "2026-04-27T00:00:00", "ket": "Medium Bus", "nomor_nb": "NB 37", "tgl_keluar": null, "no_spk": null}, {"no": 37.0, "customer": "PT Berlian Cleaning Industri ", "merk": "Mits FE 74", "jenis": "Chasis ", "no_rangka": "MHMFE74EHTK010370", "no_mesin": "4V21-B38557", "pemborong": "Ambon", "tgl_masuk": "2026-04-02T00:00:00", "ket": "Cat Cabin Saja", "nomor_nb": "NB 38", "tgl_keluar": null, "no_spk": null}, {"no": 38.0, "customer": "PT Nenggapratama Internusa ", "merk": "Hino GB 150 L", "jenis": "Chasis ", "no_rangka": "MJEZCP5F2T9500539", "no_mesin": "N04CWKJ11340", "pemborong": "Marsono", "tgl_masuk": "2026-05-09T00:00:00", "ket": "Medium Bus", "nomor_nb": "NB 39", "tgl_keluar": null, "no_spk": null}, {"no": 39.0, "customer": "PT Langgeng Muara Makmur ", "merk": "Mits FE 84 ", "jenis": "Chasis ", "no_rangka": "MHMFE84ENSJ003440", "no_mesin": "4V21-A07669", "pemborong": "Marsono", "tgl_masuk": "2026-05-15T00:00:00", "ket": "Medium Bus", "nomor_nb": "NB 40", "tgl_keluar": null, "no_spk": null}, {"no": 40.0, "customer": "PT Langgeng Muara Makmur ", "merk": "Mits FE 84 ", "jenis": "Chasis ", "no_rangka": "MHMFE84ENSJ003441", "no_mesin": "4V21-A07660", "pemborong": "Marsono", "tgl_masuk": "2026-05-15T00:00:00", "ket": "Medium Bus", "nomor_nb": "NB 41", "tgl_keluar": null, "no_spk": null}, {"no": 41.0, "customer": "PT Bersama Sejahtera ", "merk": "Mits FE 84 ", "jenis": "Chasis ", "no_rangka": "MHMFE84ENSJ003442", "no_mesin": "4V21-A07668", "pemborong": "Derry", "tgl_masuk": "2026-05-15T00:00:00", "ket": "Medium Bus", "nomor_nb": "NB 42", "tgl_keluar": null, "no_spk": null}, {"no": 42.0, "customer": "PT Bina Sains ", "merk": "Mits FE 84 ", "jenis": "Chasis ", "no_rangka": "MHMFE84ENSJ003443", "no_mesin": "4V21-A07662", "pemborong": "Slamet ", "tgl_masuk": "2026-05-15T00:00:00", "ket": "Medium Bus", "nomor_nb": "NB 43", "tgl_keluar": null, "no_spk": null}, {"no": 43.0, "customer": "PT Aneka Inti Persada ", "merk": "Mits FE 84 ", "jenis": "Chasis ", "no_rangka": "MHMFE84ENSJ003444", "no_mesin": "4V21-A07667", "pemborong": "Ambon", "tgl_masuk": "2026-05-15T00:00:00", "ket": "Medium Bus", "nomor_nb": "NB 44", "tgl_keluar": null, "no_spk": null}, {"no": 44.0, "customer": "PT Tunggal Mitra ", "merk": "Mits FE 84 ", "jenis": "Chasis ", "no_rangka": "MHMFE84ENSJ003445", "no_mesin": "4V21-A07647", "pemborong": "Ambon", "tgl_masuk": "2026-05-15T00:00:00", "ket": "Medium Bus", "nomor_nb": "NB 45", "tgl_keluar": null, "no_spk": null}, {"no": 45.0, "customer": "PT Harmoni Panca Utama ", "merk": "Mits FE 84 ", "jenis": "Chasis ", "no_rangka": "MJEFM8JN2SJX30454", "no_mesin": "J08EWDJ48259", "pemborong": "Ambon", "tgl_masuk": "2026-05-25T00:00:00", "ket": "Manhaul", "nomor_nb": "NB 46", "tgl_keluar": null, "no_spk": null}, {"no": 46.0, "customer": "PT Harmoni Panca Utama ", "merk": "Mits FE 84 ", "jenis": "Chasis ", "no_rangka": "MJEFM8JN2SJX30505", "no_mesin": "J08EWDJ48514", "pemborong": "Slamet ", "tgl_masuk": "2026-05-25T00:00:00", "ket": "Manhaul", "nomor_nb": "NB 47", "tgl_keluar": null, "no_spk": null}, {"no": 47.0, "customer": "PT Harmoni Panca Utama ", "merk": "Mits FE 84 ", "jenis": "Chasis ", "no_rangka": "MJEFM8JN2SJX30507", "no_mesin": "J08EWDJ48516", "pemborong": "Ambon ", "tgl_masuk": "2026-05-25T00:00:00", "ket": "Manhaul", "nomor_nb": "NB 48", "tgl_keluar": null, "no_spk": null}, {"no": 48.0, "customer": "Mandau Berlian Sejati ", "merk": "Mits FE 84 ", "jenis": "Chasis ", "no_rangka": "MHMFE84ENTJ003628", "no_mesin": "4V21-B13478", "pemborong": "Derry ", "tgl_masuk": "2026-06-04T00:00:00", "ket": "Medium Bus", "nomor_nb": "NB 49", "tgl_keluar": null, "no_spk": null}, {"no": 49.0, "customer": "Mandau Berlian Sejati ", "merk": "Mits FE 84 ", "jenis": "Chasis ", "no_rangka": "MHMFE84ENTJ003638", "no_mesin": "4V21-B13467", "pemborong": "Marsono ", "tgl_masuk": "2026-06-04T00:00:00", "ket": "Medium Bus", "nomor_nb": "NB 50", "tgl_keluar": null, "no_spk": null}, {"no": 50.0, "customer": "PT Kayong Alumunium Nusantara ", "merk": "Mits Triton DC HDX", "jenis": "Chasis ", "no_rangka": "MMBJNLC10SH067436", "no_mesin": "4N16UBG4405", "pemborong": "Cat: Toni (3juta)", "tgl_masuk": "2026-06-25T00:00:00", "ket": "Commander Fire Car", "nomor_nb": "NB 51", "tgl_keluar": null, "no_spk": null}, {"no": 51.0, "customer": "PT Srikandi Diamond Motors / Jatim Jaya", "merk": "Canter FE84G BCN", "jenis": "Chasis ", "no_rangka": "MHMFE84ENTJ003671", "no_mesin": "4V21-B24866", "pemborong": "Komponen: Ambon, Body: Ambon, Dempul: Ambon, Cat: Toni, Fiber: Derry, Finishing: Ambon", "tgl_masuk": "2026-07-06T00:00:00", "ket": "Medium Bus", "nomor_nb": "NB 52", "tgl_keluar": null, "no_spk": null}];
+
+/* =========================================================
+   STATE & STORAGE
+   ========================================================= */
+let state = { masterBarang: [], unitMasuk: [], barangMasuk: [], barangKeluar: [] };
+
+async function loadState(){
+  try{
+    const mb = await window.storage.get('master_barang', true);
+    state.masterBarang = mb ? JSON.parse(mb.value) : null;
+  }catch(e){ state.masterBarang = null; }
+  if(!state.masterBarang){
+    state.masterBarang = SEED_MASTER_BARANG.map(x => ({...x}));
+    await window.storage.set('master_barang', JSON.stringify(state.masterBarang), true);
+  }
+
+  try{
+    const um = await window.storage.get('unit_masuk', true);
+    state.unitMasuk = um ? JSON.parse(um.value) : null;
+  }catch(e){ state.unitMasuk = null; }
+  if(!state.unitMasuk){
+    state.unitMasuk = SEED_UNIT_MASUK.map(x => ({...x}));
+    await window.storage.set('unit_masuk', JSON.stringify(state.unitMasuk), true);
+  }
+
+  try{
+    const bm = await window.storage.get('barang_masuk', true);
+    state.barangMasuk = bm ? JSON.parse(bm.value) : [];
+  }catch(e){ state.barangMasuk = []; }
+
+  try{
+    const bk = await window.storage.get('barang_keluar', true);
+    state.barangKeluar = bk ? JSON.parse(bk.value) : [];
+  }catch(e){ state.barangKeluar = []; }
+}
+
+async function saveMasterBarang(){ try{ await window.storage.set('master_barang', JSON.stringify(state.masterBarang), true); }catch(e){ console.error(e); } }
+async function saveUnitMasuk(){ try{ await window.storage.set('unit_masuk', JSON.stringify(state.unitMasuk), true); }catch(e){ console.error(e); } }
+async function saveBarangMasuk(){ try{ await window.storage.set('barang_masuk', JSON.stringify(state.barangMasuk), true); }catch(e){ console.error(e); } }
+async function saveBarangKeluar(){ try{ await window.storage.set('barang_keluar', JSON.stringify(state.barangKeluar), true); }catch(e){ console.error(e); } }
+
+/* =========================================================
+   HELPERS
+   ========================================================= */
+function fmtNum(n){ if(n===null||n===undefined||isNaN(n)) return '-'; return Number(n).toLocaleString('id-ID'); }
+function fmtDate(d){ if(!d) return '-'; const dt = new Date(d); if(isNaN(dt)) return d; return dt.toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric'}); }
+function todayISO(){ return new Date().toISOString().slice(0,10); }
+function uid(){ return 'tx_'+Date.now()+'_'+Math.random().toString(36).slice(2,8); }
+function itemStatus(item){
+  const threshold = (item.stok_min===null||item.stok_min===undefined) ? 0 : item.stok_min;
+  return item.stok_berjalan <= threshold ? 'PESAN' : 'AMAN';
+}
+function findItem(kode){ return state.masterBarang.find(i => String(i.kode) === String(kode)); }
+function showToast(msg, isErr){
+  const t = document.getElementById('toast');
+  document.getElementById('toastMsg').textContent = msg;
+  t.classList.toggle('err', !!isErr);
+  t.classList.add('show');
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(()=> t.classList.remove('show'), 3200);
+}
+function unitIsActive(u){ return !u.tgl_keluar; }
+
+/* =========================================================
+   NAVIGATION
+   ========================================================= */
+document.querySelectorAll('.nav-item').forEach(el=>{
+  el.addEventListener('click', ()=> goToPage(el.dataset.page));
+});
+const PAGE_META = {
+  dashboard: {title:'Dashboard', desc:'Ringkasan kondisi gudang hari ini'},
+  masuk: {title:'Input Barang Masuk', desc:'Catat setiap penerimaan barang ke gudang'},
+  keluar: {title:'Input Barang Keluar', desc:'Catat barang keluar, terhubung dengan Nomor NB unit'},
+  unit: {title:'Unit Masuk (Nomor NB)', desc:'Daftar unit yang tercatat masuk ke perusahaan'},
+  barang: {title:'Master Barang', desc:'Seluruh item barang beserta stok berjalan'},
+  pesan: {title:'Perlu Dipesan', desc:'Barang yang perlu segera dipesan ulang'},
+};
+function goToPage(page){
+  document.querySelectorAll('.nav-item').forEach(el=> el.classList.toggle('active', el.dataset.page===page));
+  document.querySelectorAll('.page').forEach(el=> el.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  document.getElementById('pageTitle').textContent = PAGE_META[page].title;
+  document.getElementById('pageDesc').textContent = PAGE_META[page].desc;
+  if(page==='dashboard') renderDashboard();
+  if(page==='masuk') renderMasukPage();
+  if(page==='keluar') renderKeluarPage();
+  if(page==='unit') renderUnitPage();
+  if(page==='barang') renderBarangPage();
+  if(page==='pesan') renderPesanPage();
+}
+
+/* =========================================================
+   RENDER: DASHBOARD
+   ========================================================= */
+function renderDashboard(){
+  const totalItem = state.masterBarang.length;
+  const perluPesan = state.masterBarang.filter(i => itemStatus(i)==='PESAN');
+  const unitAktif = state.unitMasuk.filter(unitIsActive).length;
+  const thisMonth = new Date().toISOString().slice(0,7);
+  const txThisMonth = state.barangMasuk.filter(t=>t.tanggal && t.tanggal.slice(0,7)===thisMonth).length
+                     + state.barangKeluar.filter(t=>t.tanggal && t.tanggal.slice(0,7)===thisMonth).length;
+
+  document.getElementById('statTotalItem').textContent = fmtNum(totalItem);
+  document.getElementById('statPesan').textContent = fmtNum(perluPesan.length);
+  document.getElementById('statUnitAktif').textContent = fmtNum(unitAktif);
+  document.getElementById('statTransaksiBulan').textContent = fmtNum(txThisMonth);
+  document.getElementById('navPesanBadge').textContent = perluPesan.length;
+
+  const acts = [
+    ...state.barangMasuk.map(t=>({...t, jenis:'Masuk'})),
+    ...state.barangKeluar.map(t=>({...t, jenis:'Keluar'})),
+  ].sort((a,b)=> new Date(b.tanggal)-new Date(a.tanggal) || (b.createdAt||0)-(a.createdAt||0)).slice(0,10);
+
+  const tbody = document.getElementById('tblAktivitas');
+  tbody.innerHTML = acts.length ? acts.map(a=>`
+    <tr>
+      <td class="mono">${fmtDate(a.tanggal)}</td>
+      <td>${a.jenis==='Masuk' ? '<span class="badge badge-aman">Masuk</span>' : '<span class="badge badge-pesan">Keluar</span>'}</td>
+      <td>${a.nama_barang}</td>
+      <td class="mono">${fmtNum(a.qty)}</td>
+      <td class="muted">${a.jenis==='Masuk' ? (a.keterangan||'-') : ('NB: '+(a.nomor_nb||'-'))}</td>
+    </tr>`).join('') : `<tr class="empty-row"><td colspan="5">Belum ada transaksi. Mulai input di halaman Barang Masuk/Keluar.</td></tr>`;
+
+  const tbodyP = document.getElementById('tblPesanRingkas');
+  const topPesan = perluPesan.slice(0,8);
+  tbodyP.innerHTML = topPesan.length ? topPesan.map(i=>`
+    <tr><td>${i.nama}</td><td class="right mono" style="color:var(--red)">${fmtNum(i.stok_berjalan)}</td></tr>
+  `).join('') : `<tr class="empty-row"><td colspan="2">Semua stok aman ✓</td></tr>`;
+}
+
+/* =========================================================
+   RENDER: BARANG MASUK
+   ========================================================= */
+function populateKodeSelect(selectEl){
+  selectEl.innerHTML = '<option value="">— pilih kode barang —</option>' +
+    state.masterBarang.slice().sort((a,b)=> a.nama.localeCompare(b.nama))
+      .map(i=> `<option value="${i.kode}">${i.kode} — ${i.nama}</option>`).join('');
+}
+
+function renderMasukPage(){
+  document.getElementById('mTanggal').value = document.getElementById('mTanggal').value || todayISO();
+  populateKodeSelect(document.getElementById('mKode'));
+  renderMasukTable();
+}
+function renderMasukTable(filter=''){
+  const q = (filter||document.getElementById('searchMasuk').value||'').toLowerCase();
+  const rows = state.barangMasuk
+    .filter(t => !q || (t.nama_barang||'').toLowerCase().includes(q) || String(t.kode_barang).toLowerCase().includes(q))
+    .sort((a,b)=> new Date(b.tanggal)-new Date(a.tanggal) || (b.createdAt||0)-(a.createdAt||0));
+  document.getElementById('masukCount').textContent = rows.length + ' transaksi';
+  document.getElementById('tblMasuk').innerHTML = rows.length ? rows.map(t=>`
+    <tr>
+      <td class="mono">${fmtDate(t.tanggal)}</td>
+      <td class="mono">${t.kode_barang}</td>
+      <td>${t.nama_barang}</td>
+      <td class="right mono" style="color:var(--green)">+${fmtNum(t.qty)}</td>
+      <td class="muted">${t.satuan||'-'}</td>
+      <td class="muted">${t.keterangan||'-'}</td>
+    </tr>`).join('') : `<tr class="empty-row"><td colspan="6">Belum ada riwayat barang masuk.</td></tr>`;
+}
+document.getElementById('searchMasuk').addEventListener('input', e=> renderMasukTable(e.target.value));
+
+document.getElementById('mKode').addEventListener('change', function(){
+  const item = findItem(this.value);
+  document.getElementById('mNama').value = item ? item.nama : '';
+  document.getElementById('mSatuan').value = item ? (item.satuan||'') : '';
+  document.getElementById('mStokPreview').textContent = item ? `Stok saat ini: ${fmtNum(item.stok_berjalan)} ${item.satuan||''}` : '';
+});
+
+function resetMasukForm(){
+  document.getElementById('formMasuk').reset();
+  document.getElementById('mTanggal').value = todayISO();
+  document.getElementById('mNama').value=''; document.getElementById('mSatuan').value='';
+  document.getElementById('mStokPreview').textContent='';
+}
+
+document.getElementById('formMasuk').addEventListener('submit', async function(e){
+  e.preventDefault();
+  const kode = document.getElementById('mKode').value;
+  const item = findItem(kode);
+  if(!item){ showToast('Pilih kode barang terlebih dahulu.', true); return; }
+  const qty = parseFloat(document.getElementById('mQty').value);
+  if(!qty || qty<=0){ showToast('Qty harus lebih dari 0.', true); return; }
+
+  const tx = {
+    id: uid(),
+    tanggal: document.getElementById('mTanggal').value,
+    kode_barang: item.kode,
+    nama_barang: item.nama,
+    qty: qty,
+    satuan: item.satuan,
+    keterangan: document.getElementById('mKet').value.trim(),
+    createdAt: Date.now()
+  };
+  state.barangMasuk.push(tx);
+  item.stok_berjalan = (Number(item.stok_berjalan)||0) + qty;
+  await saveBarangMasuk();
+  await saveMasterBarang();
+  showToast(`Barang masuk tersimpan: +${fmtNum(qty)} ${item.satuan||''} ${item.nama}`);
+  resetMasukForm();
+  renderMasukTable();
+});
+
+/* =========================================================
+   RENDER: BARANG KELUAR
+   ========================================================= */
+function populateNomorNBSelect(){
+  const sel = document.getElementById('kNomorNB');
+  const active = state.unitMasuk.filter(unitIsActive)
+    .slice().sort((a,b)=> String(a.nomor_nb||'').localeCompare(String(b.nomor_nb||''), undefined, {numeric:true}));
+  sel.innerHTML = '<option value="">— pilih Nomor NB —</option>' +
+    active.map(u=> `<option value="${u.nomor_nb}">${u.nomor_nb} — ${u.customer||''} (${u.merk||u.ket||''})</option>`).join('') +
+    '<option value="__manual__">Lainnya / tidak ada di daftar NB…</option>';
+}
+
+function renderKeluarPage(){
+  document.getElementById('kTanggal').value = document.getElementById('kTanggal').value || todayISO();
+  populateKodeSelect(document.getElementById('kKode'));
+  populateNomorNBSelect();
+  renderKeluarTable();
+}
+function renderKeluarTable(filter=''){
+  const q = (filter||document.getElementById('searchKeluar').value||'').toLowerCase();
+  const rows = state.barangKeluar
+    .filter(t => !q || (t.nama_barang||'').toLowerCase().includes(q) || String(t.kode_barang).toLowerCase().includes(q) || (t.nomor_nb||'').toLowerCase().includes(q))
+    .sort((a,b)=> new Date(b.tanggal)-new Date(a.tanggal) || (b.createdAt||0)-(a.createdAt||0));
+  document.getElementById('keluarCount').textContent = rows.length + ' transaksi';
+  document.getElementById('tblKeluar').innerHTML = rows.length ? rows.map(t=>`
+    <tr>
+      <td class="mono">${fmtDate(t.tanggal)}</td>
+      <td class="mono">${t.kode_barang}</td>
+      <td>${t.nama_barang}</td>
+      <td class="right mono" style="color:var(--red)">-${fmtNum(t.qty)}</td>
+      <td>${t.diambil_oleh||'-'}</td>
+      <td class="muted">${t.divisi||'-'}</td>
+      <td><span class="plate">${t.nomor_nb||'-'}</span></td>
+      <td class="muted">${t.keperluan||'-'}</td>
+    </tr>`).join('') : `<tr class="empty-row"><td colspan="8">Belum ada riwayat barang keluar.</td></tr>`;
+}
+document.getElementById('searchKeluar').addEventListener('input', e=> renderKeluarTable(e.target.value));
+
+document.getElementById('kKode').addEventListener('change', function(){
+  const item = findItem(this.value);
+  document.getElementById('kNama').value = item ? item.nama : '';
+  document.getElementById('kStokTersedia').value = item ? `${fmtNum(item.stok_berjalan)} ${item.satuan||''}` : '';
+  updateKeluarPreview();
+});
+document.getElementById('kQty').addEventListener('input', updateKeluarPreview);
+function updateKeluarPreview(){
+  const item = findItem(document.getElementById('kKode').value);
+  const qty = parseFloat(document.getElementById('kQty').value)||0;
+  const box = document.getElementById('kStokPreview');
+  if(!item){ box.textContent=''; return; }
+  const sisa = (Number(item.stok_berjalan)||0) - qty;
+  box.innerHTML = sisa < 0
+    ? `<span style="color:var(--red)">⚠ Stok akan minus (sisa ${fmtNum(sisa)}). Periksa kembali sebelum menyimpan.</span>`
+    : `Sisa stok setelah transaksi: ${fmtNum(sisa)} ${item.satuan||''}`;
+}
+
+document.getElementById('kNomorNB').addEventListener('change', function(){
+  document.getElementById('kManualWrap').style.display = this.value==='__manual__' ? 'block' : 'none';
+});
+
+function resetKeluarForm(){
+  document.getElementById('formKeluar').reset();
+  document.getElementById('kTanggal').value = todayISO();
+  document.getElementById('kNama').value=''; document.getElementById('kStokTersedia').value='';
+  document.getElementById('kStokPreview').textContent='';
+  document.getElementById('kManualWrap').style.display='none';
+}
+
+document.getElementById('formKeluar').addEventListener('submit', async function(e){
+  e.preventDefault();
+  const kode = document.getElementById('kKode').value;
+  const item = findItem(kode);
+  if(!item){ showToast('Pilih kode barang terlebih dahulu.', true); return; }
+  const qty = parseFloat(document.getElementById('kQty').value);
+  if(!qty || qty<=0){ showToast('Qty harus lebih dari 0.', true); return; }
+
+  let nbSel = document.getElementById('kNomorNB').value;
+  if(!nbSel){ showToast('Nomor NB wajib dipilih — barang keluar harus terhubung ke unit.', true); return; }
+  let nomorNB = nbSel;
+  if(nbSel === '__manual__'){
+    const manual = document.getElementById('kNomorNBManual').value.trim();
+    if(!manual){ showToast('Isi keterangan unit manual (mis. GAWI 0668).', true); return; }
+    nomorNB = manual;
+  }
+
+  const tx = {
+    id: uid(),
+    tanggal: document.getElementById('kTanggal').value,
+    kode_barang: item.kode,
+    nama_barang: item.nama,
+    qty: qty,
+    satuan: item.satuan,
+    diambil_oleh: document.getElementById('kDiambil').value.trim(),
+    divisi: document.getElementById('kDivisi').value.trim(),
+    nomor_nb: nomorNB,
+    keperluan: document.getElementById('kKeperluan').value.trim(),
+    createdAt: Date.now()
+  };
+  state.barangKeluar.push(tx);
+  item.stok_berjalan = (Number(item.stok_berjalan)||0) - qty;
+  await saveBarangKeluar();
+  await saveMasterBarang();
+  showToast(`Barang keluar tersimpan: -${fmtNum(qty)} ${item.satuan||''} ${item.nama} → ${nomorNB}`);
+  resetKeluarForm();
+  renderKeluarTable();
+});
+
+/* =========================================================
+   RENDER: UNIT MASUK
+   ========================================================= */
+function renderUnitPage(){
+  renderUnitTable();
+}
+function renderUnitTable(){
+  const q = (document.getElementById('searchUnit').value||'').toLowerCase();
+  const statusF = document.getElementById('filterUnitStatus').value;
+  const rows = state.unitMasuk.filter(u=>{
+    const matchQ = !q || (u.nomor_nb||'').toLowerCase().includes(q) || (u.customer||'').toLowerCase().includes(q) || (u.merk||'').toLowerCase().includes(q);
+    const active = unitIsActive(u);
+    const matchS = !statusF || (statusF==='digudang' ? active : !active);
+    return matchQ && matchS;
+  }).sort((a,b)=> String(a.nomor_nb||'').localeCompare(String(b.nomor_nb||''), undefined, {numeric:true}));
+
+  document.getElementById('unitCount').textContent = rows.length + ' unit';
+  document.getElementById('tblUnit').innerHTML = rows.length ? rows.map(u=>`
+    <tr>
+      <td><span class="plate">${u.nomor_nb||'-'}</span></td>
+      <td>${u.customer||'-'}</td>
+      <td>${u.merk||'-'} <span class="muted">/ ${u.jenis||'-'}</span></td>
+      <td class="mono muted">${u.no_rangka||'-'}</td>
+      <td class="mono">${fmtDate(u.tgl_masuk)}</td>
+      <td>${unitIsActive(u) ? '<span class="badge badge-di-gudang">Di gudang</span>' : '<span class="badge badge-keluar">Sudah keluar</span>'}</td>
+    </tr>`).join('') : `<tr class="empty-row"><td colspan="6">Tidak ada unit yang cocok.</td></tr>`;
+}
+document.getElementById('searchUnit').addEventListener('input', renderUnitTable);
+document.getElementById('filterUnitStatus').addEventListener('change', renderUnitTable);
+
+/* =========================================================
+   RENDER: MASTER BARANG
+   ========================================================= */
+function renderBarangPage(){
+  const katSel = document.getElementById('filterKategori');
+  if(katSel.options.length<=1){
+    const kats = [...new Set(state.masterBarang.map(i=>i.kategori).filter(Boolean))].sort();
+    katSel.innerHTML = '<option value="">Semua kategori</option>' + kats.map(k=>`<option value="${k}">${k}</option>`).join('');
+  }
+  renderBarangTable();
+}
+function renderBarangTable(){
+  const q = (document.getElementById('searchBarang').value||'').toLowerCase();
+  const kat = document.getElementById('filterKategori').value;
+  const st = document.getElementById('filterStatus').value;
+  const rows = state.masterBarang.filter(i=>{
+    const matchQ = !q || (i.nama||'').toLowerCase().includes(q) || String(i.kode).toLowerCase().includes(q);
+    const matchK = !kat || i.kategori===kat;
+    const matchS = !st || itemStatus(i)===st;
+    return matchQ && matchK && matchS;
+  }).sort((a,b)=> a.nama.localeCompare(b.nama));
+
+  document.getElementById('barangCount').textContent = rows.length + ' item';
+  document.getElementById('tblBarang').innerHTML = rows.length ? rows.map(i=>{
+    const s = itemStatus(i);
+    return `<tr>
+      <td class="mono">${i.kode}</td>
+      <td>${i.nama}</td>
+      <td class="muted">${i.kategori||'-'}</td>
+      <td class="muted">${i.lokasi||'-'}</td>
+      <td class="right mono">${fmtNum(i.stok_berjalan)}</td>
+      <td class="muted">${i.satuan||'-'}</td>
+      <td><span class="badge ${s==='AMAN'?'badge-aman':'badge-pesan'}">${s}</span></td>
+    </tr>`;
+  }).join('') : `<tr class="empty-row"><td colspan="7">Tidak ada barang yang cocok.</td></tr>`;
+}
+document.getElementById('searchBarang').addEventListener('input', renderBarangTable);
+document.getElementById('filterKategori').addEventListener('change', renderBarangTable);
+document.getElementById('filterStatus').addEventListener('change', renderBarangTable);
+
+/* =========================================================
+   RENDER: PERLU DIPESAN
+   ========================================================= */
+function renderPesanPage(){
+  const rows = state.masterBarang.filter(i=> itemStatus(i)==='PESAN')
+    .sort((a,b)=> (a.stok_berjalan)-(b.stok_berjalan));
+  document.getElementById('tblPesan').innerHTML = rows.length ? rows.map(i=>`
+    <tr>
+      <td class="mono">${i.kode}</td>
+      <td>${i.nama}</td>
+      <td class="muted">${i.kategori||'-'}</td>
+      <td class="muted">${i.lokasi||'-'}</td>
+      <td class="right mono" style="color:var(--red)">${fmtNum(i.stok_berjalan)}</td>
+      <td class="right mono muted">${i.stok_min===null||i.stok_min===undefined ? '0' : fmtNum(i.stok_min)}</td>
+    </tr>`).join('') : `<tr class="empty-row"><td colspan="6">Tidak ada barang yang perlu dipesan saat ini ✓</td></tr>`;
+}
+
+/* =========================================================
+   INIT
+   ========================================================= */
+async function init(){
+  await loadState();
+  document.getElementById('loading').style.display='none';
+  document.getElementById('app').style.display='flex';
+  document.getElementById('todayDate').textContent = new Date().toLocaleDateString('id-ID',{weekday:'long', day:'2-digit', month:'long', year:'numeric'});
+  renderDashboard();
+}
+init();
+</script>
+</body>
+</html>
