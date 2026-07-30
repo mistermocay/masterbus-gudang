@@ -107,7 +107,25 @@
   .btn-primary:hover{ background:#ffbb52; }
   .btn-in{ background:var(--blue-dim); border-color:#294a85; color:#8fb4ff; }
   .btn-out{ background:var(--amber-dim); border-color:#6b4f1c; color:var(--amber); }
+  .btn-danger{
+    background:#dc2626;
+    color:#fff;
+    border:none;
+}
 
+.btn-danger:hover{
+    background:#b91c1c;
+}
+
+.btn-edit{
+    background:#2563eb;
+    color:#fff;
+    border:none;
+}
+
+.btn-edit:hover{
+    background:#1d4ed8;
+}
   .plate{
     font-family:'JetBrains Mono', monospace; font-weight:700; font-size:12px;
     border:1.5px solid var(--amber); color:var(--amber); background:var(--amber-dim);
@@ -428,8 +446,21 @@
     <div class="page" id="page-unit">
       <div class="panel">
         <div class="panel-head">
-          <div><h3>Daftar Unit Masuk</h3><div class="sub" id="unitCount">0 unit</div></div>
-        </div>
+
+    <div>
+        <h3>Daftar Unit Masuk</h3>
+        <div class="sub" id="unitCount">0 unit</div>
+    </div>
+
+    <button
+        class="btn btn-primary"
+        onclick="tambahUnit()">
+
+        ➕ Tambah Unit
+
+    </button>
+
+</div>
         <div class="search-bar">
           <input type="text" id="searchUnit" placeholder="Cari Nomor NB / customer / merk…">
           <select id="filterUnitStatus">
@@ -440,9 +471,20 @@
         </div>
         <div class="panel-body">
           <table>
-            <thead><tr><th>Nomor NB</th><th>Customer</th><th>Merk / Jenis</th><th>No. Rangka</th><th>Tgl Masuk</th><th>Status</th></tr></thead>
-            <tbody id="tblUnit"></tbody>
-          </table>
+            <thead>
+                <tr>
+                  <th>Nomor NB</th>
+                  <th>Customer</th>
+                  <th>Merk / Jenis</th>
+                  <th>No. Rangka</th>
+                  <th>Tgl Masuk</th>
+                  <th>Status</th>
+                  <th width="180">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="tblUnit"></tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
@@ -850,15 +892,64 @@ function renderUnitTable(){
   }).sort((a,b)=> String(a.nomor_nb||'').localeCompare(String(b.nomor_nb||''), undefined, {numeric:true}));
 
   document.getElementById('unitCount').textContent = rows.length + ' unit';
-  document.getElementById('tblUnit').innerHTML = rows.length ? rows.map(u=>`
-    <tr>
-      <td><span class="plate">${u.nomor_nb||'-'}</span></td>
-      <td>${u.customer||'-'}</td>
-      <td>${u.merk||'-'} <span class="muted">/ ${u.jenis||'-'}</span></td>
-      <td class="mono muted">${u.no_rangka||'-'}</td>
-      <td class="mono">${fmtDate(u.tgl_masuk)}</td>
-      <td>${unitIsActive(u) ? '<span class="badge badge-di-gudang">Di gudang</span>' : '<span class="badge badge-keluar">Sudah keluar</span>'}</td>
-    </tr>`).join('') : `<tr class="empty-row"><td colspan="6">Tidak ada unit yang cocok.</td></tr>`;
+  document.getElementById('tblUnit').innerHTML = rows.length
+? rows.map(u => `
+<tr>
+    <td>
+        <span class="plate">${u.nomor_nb || '-'}</span>
+    </td>
+    <td>
+        ${u.customer || '-'}
+    </td>
+    <td>
+        ${u.merk || '-'}
+        <span class="muted"> / ${u.jenis || '-'}</span>
+    </td>
+    <td class="mono muted">
+        ${u.no_rangka || '-'}
+    </td>
+    <td class="mono">
+        ${fmtDate(u.tgl_masuk)}
+    </td>
+    <td>
+        ${
+            unitIsActive(u)
+            ? '<span class="badge badge-di-gudang">MASUK</span>'
+            : '<span class="badge badge-keluar">KELUAR</span>'
+        }
+    </td>
+    <td>
+        <button
+            class="btn"
+            onclick="editUnit('${u.id}')">
+            ✏ Edit
+        </button>
+        ${
+            unitIsActive(u)
+            ? `
+            <button
+                class="btn btn-out"
+                onclick="keluarkanUnit('${u.id}')">
+                🚚 Keluar
+            </button>
+            `
+            : ''
+        }
+        <button
+            class="btn btn-danger"
+            onclick="hapusUnit('${u.id}')">
+            🗑 Hapus
+        </button>
+    </td>
+</tr>
+`).join('')
+: `
+<tr class="empty-row">
+    <td colspan="7">
+        Tidak ada unit yang cocok.
+    </td>
+</tr>
+`;
 }
 document.getElementById('searchUnit').addEventListener('input', renderUnitTable);
 document.getElementById('filterUnitStatus').addEventListener('change', renderUnitTable);
@@ -929,6 +1020,71 @@ async function init(){
   document.getElementById('app').style.display='flex';
   document.getElementById('todayDate').textContent = new Date().toLocaleDateString('id-ID',{weekday:'long', day:'2-digit', month:'long', year:'numeric'});
   renderDashboard();
+}
+async function hapusUnit(id){
+
+    if(!confirm("Yakin ingin menghapus unit ini?")) return;
+
+    state.unitMasuk = state.unitMasuk.filter(u => u.id !== id);
+
+    await saveUnitMasuk();
+
+    renderUnitTable();
+
+    populateNomorNBSelect();
+
+    showToast("Unit berhasil dihapus.");
+
+}
+async function keluarkanUnit(id){
+
+    const unit = state.unitMasuk.find(u => u.id === id);
+
+    if(!unit) return;
+
+    if(!confirm("Apakah unit ini sudah keluar dari gudang?")) return;
+
+    unit.tgl_keluar = todayISO();
+
+    await saveUnitMasuk();
+
+    renderUnitTable();
+
+    populateNomorNBSelect();
+
+    showToast("Status unit berhasil diubah menjadi KELUAR.");
+
+}
+async function editUnit(id){
+
+    const unit = state.unitMasuk.find(u => u.id === id);
+
+    if(!unit) return;
+
+    const customer = prompt("Customer", unit.customer);
+
+    if(customer === null) return;
+
+    const merk = prompt("Merk", unit.merk);
+
+    if(merk === null) return;
+
+    const jenis = prompt("Jenis", unit.jenis);
+
+    if(jenis === null) return;
+
+    unit.customer = customer;
+    unit.merk = merk;
+    unit.jenis = jenis;
+
+    await saveUnitMasuk();
+
+    renderUnitTable();
+
+    populateNomorNBSelect();
+
+    showToast("Data unit berhasil diperbarui.");
+
 }
 init();
 </script>
