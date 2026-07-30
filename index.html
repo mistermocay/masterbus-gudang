@@ -503,6 +503,30 @@ const SEED_UNIT_MASUK = [{"no": 1.0, "customer": "PT Nenggapratama Internusa ", 
    ========================================================= */
 let state = { masterBarang: [], unitMasuk: [], barangMasuk: [], barangKeluar: [] };
 
+<script>
+window.storage = {
+  async get(key) {
+    const value = localStorage.getItem(key);
+    return value ? { value } : null;
+  },
+
+  async set(key, value) {
+    localStorage.setItem(key, value);
+    return true;
+  },
+
+  async remove(key) {
+    localStorage.removeItem(key);
+    return true;
+  },
+
+  async clear() {
+    localStorage.clear();
+    return true;
+  }
+};
+</script>
+
 async function loadState(){
   try{
     const mb = await window.storage.get('master_barang', true);
