@@ -1086,6 +1086,59 @@ async function editUnit(id){
     showToast("Data unit berhasil diperbarui.");
 
 }
+async function tambahUnit(){
+
+    const nomor_nb = prompt("Nomor NB");
+
+    if(!nomor_nb) return;
+
+    const customer = prompt("Customer");
+
+    if(customer === null) return;
+
+    const merk = prompt("Merk");
+
+    if(merk === null) return;
+
+    const jenis = prompt("Jenis");
+
+    if(jenis === null) return;
+
+    const no_rangka = prompt("No Rangka");
+
+    if(no_rangka === null) return;
+
+    const unit = {
+
+        id: crypto.randomUUID(),
+
+        nomor_nb,
+
+        customer,
+
+        merk,
+
+        jenis,
+
+        no_rangka,
+
+        tgl_masuk: todayISO(),
+
+        tgl_keluar: null
+
+    };
+
+    state.unitMasuk.push(unit);
+
+    await saveUnitMasuk();
+
+    renderUnitTable();
+
+    populateNomorNBSelect();
+
+    showToast("Unit berhasil ditambahkan.");
+
+}
 init();
 </script>
 </body>
