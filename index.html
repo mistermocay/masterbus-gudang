@@ -601,14 +601,14 @@
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.0/firebase-app.js";
 import {
-    getFirestore,
+    doc,
     collection,
+    getDoc,
     getDocs,
     addDoc,
     updateDoc,
-    deleteDoc,
-    doc
-} from "https://www.gstatic.com/firebasejs/12.17.0/firebase-firestore.js";
+    deleteDoc
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyDGc7HXLHF0xsMkhJMKPsz3D2HiO_Y3j6c",
