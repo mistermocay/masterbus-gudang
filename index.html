@@ -1168,27 +1168,37 @@ async function editUnit(id){
     showToast("Data unit berhasil diperbarui.");
 
 }
+function openUnitModal(){
+
+    document.getElementById("modalUnit").style.display="flex";
+
+}
+
+function closeUnitModal(){
+
+    document.getElementById("modalUnit").style.display="none";
+
+}
 async function tambahUnit(){
+    function tambahUnit(){
 
-    const nomor_nb = prompt("Nomor NB");
+    openUnitModal();
 
-    if(!nomor_nb) return;
-
-    const customer = prompt("Customer");
-
-    if(customer === null) return;
-
-    const merk = prompt("Merk");
-
-    if(merk === null) return;
-
-    const jenis = prompt("Jenis");
-
-    if(jenis === null) return;
-
-    const no_rangka = prompt("No Rangka");
+}
 
     if(no_rangka === null) return;
+
+async function simpanUnit(){
+
+    const nomor_nb = document.getElementById("uNomorNB").value.trim();
+
+    const customer = document.getElementById("uCustomer").value.trim();
+
+    const merk = document.getElementById("uMerk").value.trim();
+
+    const jenis = document.getElementById("uJenis").value.trim();
+
+    const no_rangka = document.getElementById("uRangka").value.trim();
 
     const unit = {
 
@@ -1224,6 +1234,7 @@ async function tambahUnit(){
     showToast("Unit berhasil ditambahkan.");
 
 }
+}
 window.addEventListener("firebase-ready", () => {
     init();
 });
@@ -1233,5 +1244,42 @@ window.addEventListener("firebase-ready", () => {
 <script>
 console.log("window.doc =", window.doc);
 </script>
+<div id="modalUnit" class="modal-overlay" style="display:none;">
+    <div class="modal-box">
+
+        <h2>Tambah Unit Masuk</h2>
+
+        <div class="form-group">
+            <label>Nomor NB</label>
+            <input id="uNomorNB">
+        </div>
+
+        <div class="form-group">
+            <label>Customer</label>
+            <input id="uCustomer">
+        </div>
+
+        <div class="form-group">
+            <label>Merk</label>
+            <input id="uMerk">
+        </div>
+
+        <div class="form-group">
+            <label>Jenis</label>
+            <input id="uJenis">
+        </div>
+
+        <div class="form-group">
+            <label>No Rangka</label>
+            <input id="uRangka">
+        </div>
+
+        <div class="modal-footer">
+            <button onclick="closeUnitModal()">Batal</button>
+            <button onclick="simpanUnit()">Simpan</button>
+        </div>
+
+    </div>
+</div>
 </body>
 </html>
