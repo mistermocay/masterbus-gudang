@@ -606,7 +606,7 @@ async function loadCollection(name){
 
     return snap.docs.map(d => ({
         id: d.id,
-        ...d.data()
+          ...d.data()
     }));
 }
 
