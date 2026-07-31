@@ -620,7 +620,9 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+
+// gunakan Firestore yang sudah dibuat firebase.js
+const db = window.db;
 
 console.log("✅ Firebase Connected");
 
