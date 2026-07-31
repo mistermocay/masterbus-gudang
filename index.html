@@ -658,17 +658,11 @@ const SEED_UNIT_MASUK = [{"no": 1.0, "customer": "PT Nenggapratama Internusa ", 
    ========================================================= */
 let state = { masterBarang: [], unitMasuk: [], barangMasuk: [], barangKeluar: [] };
 
-const doc = window.doc;
-const getDoc = window.getDoc;
-const setDoc = window.setDoc;
-const deleteDoc = window.deleteDoc;
-const serverTimestamp = window.serverTimestamp;
-
 window.storage = {
   async get(key) {
     try {
-      const docRef = doc(window.db, "storage", key);
-      const snap = await getDoc(docRef);
+      const docRef = window.doc(window.db, "storage", key);
+      const snap = await window.getDoc(docRef);
 
       if (!snap.exists()) return null;
 
@@ -683,10 +677,13 @@ window.storage = {
 
   async set(key, value) {
     try {
-      await setDoc(doc(window.db, "storage", key), {
+      await window.setDoc(
+    window.doc(window.db, "storage", key),
+    {
         value,
-        updatedAt: serverTimestamp()
-      });
+        updatedAt: window.serverTimestamp()
+    }
+);
 
       return true;
     } catch (e) {
@@ -697,7 +694,9 @@ window.storage = {
 
   async remove(key) {
     try {
-      await deleteDoc(doc(window.db, "storage", key));
+      await window.deleteDoc(
+    window.doc(window.db, "storage", key)
+);
       return true;
     } catch (e) {
       console.error("Storage REMOVE error:", e);
