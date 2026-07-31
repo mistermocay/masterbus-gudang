@@ -598,62 +598,35 @@
 <script>
     // seluruh kode JavaScript yang sekarang
 </script>
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.0/firebase-app.js";
-import {
-    doc,
-    collection,
-    getDoc,
-    getDocs,
-    addDoc,
-    updateDoc,
-    deleteDoc
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-const firebaseConfig = {
-    apiKey: "AIzaSyDGc7HXLHF0xsMkhJMKPsz3D2HiO_Y3j6c",
-    authDomain: "master-bus-gudang.firebaseapp.com",
-    projectId: "master-bus-gudang",
-    storageBucket: "master-bus-gudang.firebasestorage.app",
-    messagingSenderId: "891795449877",
-    appId: "1:891795449877:web:f7f9de2ecf440face8c61c"
-};
-
-const app = initializeApp(firebaseConfig);
-
-// gunakan Firestore yang sudah dibuat firebase.js
-const db = window.db;
-
-console.log("✅ Firebase Connected");
-
+<script>
 async function loadCollection(name){
     const snap = await window.getDocs(
-        window.collection(window.db,name)
+        window.collection(window.db, name)
     );
 
     return snap.docs.map(d => ({
-    id: d.id,
-    ...d.data()
-  }));
+        id: d.id,
+        ...d.data()
+    }));
 }
 
-async function addCollection(name,data){
+async function addCollection(name, data){
     await window.addDoc(
-        window.collection(window.db,name),
+        window.collection(window.db, name),
         data
     );
 }
 
-async function updateCollection(name,id,data){
+async function updateCollection(name, id, data){
     await window.updateDoc(
-        window.doc(window.db,name,id),
+        window.doc(window.db, name, id),
         data
     );
 }
 
-async function deleteCollection(name,id){
+async function deleteCollection(name, id){
     await window.deleteDoc(
-        window.doc(window.db,name,id)
+        window.doc(window.db, name, id)
     );
 }
 
@@ -661,32 +634,6 @@ window.loadCollection = loadCollection;
 window.addCollection = addCollection;
 window.updateCollection = updateCollection;
 window.deleteCollection = deleteCollection;
-
-// TEST
-const snapshot = await getDocs(collection(db, "master_barang"));
-console.log("Jumlah data master barang:", snapshot.size);
-
-// Export ke window
-window.db = db;
-window.collection = collection;
-window.getDocs = getDocs;
-window.addDoc = addDoc;
-window.updateDoc = updateDoc;
-window.deleteDoc = deleteDoc;
-window.doc = doc;
-window.getDoc = getDoc;
-window.setDoc = setDoc;
-window.deleteDoc = deleteDoc;
-window.serverTimestamp = serverTimestamp;
-window.collection = collection;
-window.getDocs = getDocs;
-
-console.log("window.doc =", window.doc);
-console.log("typeof window.doc =", typeof window.doc);
-console.log("window.getDoc =", window.getDoc);
-console.log("typeof window.getDoc =", typeof window.getDoc);
-// Beri tahu script utama bahwa Firebase sudah siap
-window.dispatchEvent(new Event("firebase-ready"));
 </script>
 <script>
 /* =========================================================
