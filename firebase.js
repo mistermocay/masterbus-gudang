@@ -1,3 +1,4 @@
+console.log("🔥 firebase.js loaded");
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.0/firebase-app.js";
 
 import {
