@@ -14,12 +14,12 @@ import {
 } from "https://www.gstatic.com/firebasejs/12.17.0/firebase-firestore.js";
 
 const firebaseConfig = {
-    apiKey: "...",
-    authDomain: "...",
-    projectId: "...",
-    storageBucket: "...",
-    messagingSenderId: "...",
-    appId: "..."
+  apiKey: "AIzaSyDGc7HXLHF0xsMkhJMKPsz3D2HiO_Y3j6c",
+  authDomain: "master-bus-gudang.firebaseapp.com",
+  projectId: "master-bus-gudang",
+  storageBucket: "master-bus-gudang.firebasestorage.app",
+  messagingSenderId: "891795449877",
+  appId: "1:891795449877:web:f7f9de2ecf440face8c61c"
 };
 
 const app = initializeApp(firebaseConfig);
