@@ -614,7 +614,7 @@ let state = { masterBarang: [], unitMasuk: [], barangMasuk: [], barangKeluar: []
 window.storage = {
   async get(key) {
     try {
-      const docRef = doc(db, "storage", key);
+      const docRef = doc(winidow.db, "storage", key);
       const snap = await getDoc(docRef);
 
       if (!snap.exists()) return null;
@@ -630,7 +630,7 @@ window.storage = {
 
   async set(key, value) {
     try {
-      await setDoc(doc(db, "storage", key), {
+      await setDoc(doc(window.db, "storage", key), {
         value,
         updatedAt: serverTimestamp()
       });
@@ -644,7 +644,7 @@ window.storage = {
 
   async remove(key) {
     try {
-      await deleteDoc(doc(db, "storage", key));
+      await deleteDoc(doc(window.db, "storage", key));
       return true;
     } catch (e) {
       console.error("Storage REMOVE error:", e);
