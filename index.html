@@ -611,10 +611,16 @@ const SEED_UNIT_MASUK = [{"no": 1.0, "customer": "PT Nenggapratama Internusa ", 
    ========================================================= */
 let state = { masterBarang: [], unitMasuk: [], barangMasuk: [], barangKeluar: [] };
 
+const doc = window.doc;
+const getDoc = window.getDoc;
+const setDoc = window.setDoc;
+const deleteDoc = window.deleteDoc;
+const serverTimestamp = window.serverTimestamp;
+
 window.storage = {
   async get(key) {
     try {
-      const docRef = doc(winidow.db, "storage", key);
+      const docRef = doc(window.db, "storage", key);
       const snap = await getDoc(docRef);
 
       if (!snap.exists()) return null;
@@ -1231,14 +1237,14 @@ init();
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.0/firebase-app.js";
 import {
-  getFirestore,
-  collection,
-  getDocs,
-  doc,
-  getDoc,
-  setDoc,
-  deleteDoc,
-  serverTimestamp
+    getFirestore,
+    collection,
+    getDocs,
+    doc,
+    getDoc,
+    setDoc,
+    deleteDoc,
+    serverTimestamp
 } from "https://www.gstatic.com/firebasejs/12.17.0/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -1261,6 +1267,11 @@ console.log("Jumlah data master barang:", snapshot.size);
 
 // supaya bisa dipakai nanti
 window.db = db;
+window.doc = doc;
+window.getDoc = getDoc;
+window.setDoc = setDoc;
+window.deleteDoc = deleteDoc;
+window.serverTimestamp = serverTimestamp;
 window.collection = collection;
 window.getDocs = getDocs;
 </script>
