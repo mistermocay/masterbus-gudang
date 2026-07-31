@@ -540,6 +540,12 @@
         <div class="panel-head">
           <div><h3>Master Barang</h3><div class="sub" id="barangCount">0 item</div></div>
         </div>
+        <button
+        class="btn btn-primary"
+        onclick="tambahBarang()">
+        ➕ Tambah Barang
+    </button>
+</div>
         <div class="search-bar">
           <input type="text" id="searchBarang" placeholder="Cari kode / nama barang…">
           <select id="filterKategori"><option value="">Semua kategori</option></select>
@@ -551,7 +557,18 @@
         </div>
         <div class="panel-body">
           <table>
-            <thead><tr><th>Kode</th><th>Nama Barang</th><th>Kategori</th><th>Lokasi</th><th class="right">Stok</th><th>Satuan</th><th>Status</th></tr></thead>
+            <thead>
+            <tr>
+              <th width="70">ID</th>
+              <th>Nama Barang</th>
+              <th>Kategori</th>
+              <th>Lokasi</th>
+              <th class="right">Stok</th>
+              <th>Satuan</th>
+              <th>Status</th>
+              <th width="140">Aksi</th>
+            </tr>
+            </thead>
             <tbody id="tblBarang"></tbody>
           </table>
         </div>
