@@ -613,23 +613,48 @@ let state = { masterBarang: [], unitMasuk: [], barangMasuk: [], barangKeluar: []
 
 window.storage = {
   async get(key) {
-    const value = localStorage.getItem(key);
-    return value ? { value } : null;
+    try {
+      const docRef = doc(db, "storage", key);
+      const snap = await getDoc(docRef);
+
+      if (!snap.exists()) return null;
+
+      return {
+        value: snap.data().value
+      };
+    } catch (e) {
+      console.error("Storage GET error:", e);
+      return null;
+    }
   },
 
   async set(key, value) {
-    localStorage.setItem(key, value);
-    return true;
+    try {
+      await setDoc(doc(db, "storage", key), {
+        value,
+        updatedAt: serverTimestamp()
+      });
+
+      return true;
+    } catch (e) {
+      console.error("Storage SET error:", e);
+      return false;
+    }
   },
 
   async remove(key) {
-    localStorage.removeItem(key);
-    return true;
+    try {
+      await deleteDoc(doc(db, "storage", key));
+      return true;
+    } catch (e) {
+      console.error("Storage REMOVE error:", e);
+      return false;
+    }
   },
 
   async clear() {
-    localStorage.clear();
-    return true;
+    alert("Clear storage belum didukung untuk Firestore.");
+    return false;
   }
 };
 
@@ -1206,9 +1231,12 @@ init();
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.0/firebase-app.js";
 import {
-    getFirestore,
-    collection,
-    getDocs
+  getFirestore,
+  doc,
+  getDoc,
+  setDoc,
+  deleteDoc,
+  serverTimestamp
 } from "https://www.gstatic.com/firebasejs/12.17.0/firebase-firestore.js";
 
 const firebaseConfig = {
