@@ -604,11 +604,10 @@ import {
     getFirestore,
     collection,
     getDocs,
-    doc,
-    getDoc,
-    setDoc,
+    addDoc,
+    updateDoc,
     deleteDoc,
-    serverTimestamp
+    doc
 } from "https://www.gstatic.com/firebasejs/12.17.0/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -625,12 +624,53 @@ const db = getFirestore(app);
 
 console.log("✅ Firebase Connected");
 
+async function loadCollection(name){
+    const snap = await window.getDocs(
+        window.collection(window.db,name)
+    );
+
+    return snap.docs.map(d => ({
+    id: d.id,
+    ...d.data()
+  }));
+}
+
+async function addCollection(name,data){
+    await window.addDoc(
+        window.collection(window.db,name),
+        data
+    );
+}
+
+async function updateCollection(name,id,data){
+    await window.updateDoc(
+        window.doc(window.db,name,id),
+        data
+    );
+}
+
+async function deleteCollection(name,id){
+    await window.deleteDoc(
+        window.doc(window.db,name,id)
+    );
+}
+
+window.loadCollection = loadCollection;
+window.addCollection = addCollection;
+window.updateCollection = updateCollection;
+window.deleteCollection = deleteCollection;
+
 // TEST
 const snapshot = await getDocs(collection(db, "master_barang"));
 console.log("Jumlah data master barang:", snapshot.size);
 
 // Export ke window
 window.db = db;
+window.collection = collection;
+window.getDocs = getDocs;
+window.addDoc = addDoc;
+window.updateDoc = updateDoc;
+window.deleteDoc = deleteDoc;
 window.doc = doc;
 window.getDoc = getDoc;
 window.setDoc = setDoc;
@@ -658,97 +698,17 @@ const SEED_UNIT_MASUK = [{"no": 1.0, "customer": "PT Nenggapratama Internusa ", 
    ========================================================= */
 let state = { masterBarang: [], unitMasuk: [], barangMasuk: [], barangKeluar: [] };
 
-window.storage = {
-  async get(key) {
-    try {
-      const docRef = window.doc(window.db, "storage", key);
-      const snap = await window.getDoc(docRef);
-
-      if (!snap.exists()) return null;
-
-      return {
-        value: snap.data().value
-      };
-    } catch (e) {
-      console.error("Storage GET error:", e);
-      return null;
-    }
-  },
-
-  async set(key, value) {
-    try {
-      await window.setDoc(
-    window.doc(window.db, "storage", key),
-    {
-        value,
-        updatedAt: window.serverTimestamp()
-    }
-);
-
-      return true;
-    } catch (e) {
-      console.error("Storage SET error:", e);
-      return false;
-    }
-  },
-
-  async remove(key) {
-    try {
-      await window.deleteDoc(
-    window.doc(window.db, "storage", key)
-);
-      return true;
-    } catch (e) {
-      console.error("Storage REMOVE error:", e);
-      return false;
-    }
-  },
-
-  async clear() {
-    alert("Clear storage belum didukung untuk Firestore.");
-    return false;
-  }
-};
-
-console.log("doc =", doc);
-console.log("typeof doc =", typeof doc);
 console.log("window.doc =", window.doc);
 console.log("typeof window.doc =", typeof window.doc);
 
 async function loadState(){
-  try{
-    const mb = await window.storage.get('master_barang', true);
-    state.masterBarang = mb ? JSON.parse(mb.value) : null;
-  }catch(e){ state.masterBarang = null; }
-  if(!state.masterBarang){
-    state.masterBarang = SEED_MASTER_BARANG.map(x => ({...x}));
-    await window.storage.set('master_barang', JSON.stringify(state.masterBarang), true);
-  }
 
-  try{
-    const um = await window.storage.get('unit_masuk', true);
-    state.unitMasuk = um ? JSON.parse(um.value) : null;
-  }catch(e){ state.unitMasuk = null; }
-  if(!state.unitMasuk){
-    state.unitMasuk = SEED_UNIT_MASUK.map(x => ({...x}));
-    await window.storage.set('unit_masuk', JSON.stringify(state.unitMasuk), true);
-  }
+    state.masterBarang = await window.loadCollection("master_barang");
+    state.unitMasuk = await window.loadCollection("unit_masuk");
+    state.barangMasuk = await window.loadCollection("barang_masuk");
+    state.barangKeluar = await window.loadCollection("barang_keluar");
 
-  try{
-    const bm = await window.storage.get('barang_masuk', true);
-    state.barangMasuk = bm ? JSON.parse(bm.value) : [];
-  }catch(e){ state.barangMasuk = []; }
-
-  try{
-    const bk = await window.storage.get('barang_keluar', true);
-    state.barangKeluar = bk ? JSON.parse(bk.value) : [];
-  }catch(e){ state.barangKeluar = []; }
 }
-
-async function saveMasterBarang(){ try{ await window.storage.set('master_barang', JSON.stringify(state.masterBarang), true); }catch(e){ console.error(e); } }
-async function saveUnitMasuk(){ try{ await window.storage.set('unit_masuk', JSON.stringify(state.unitMasuk), true); }catch(e){ console.error(e); } }
-async function saveBarangMasuk(){ try{ await window.storage.set('barang_masuk', JSON.stringify(state.barangMasuk), true); }catch(e){ console.error(e); } }
-async function saveBarangKeluar(){ try{ await window.storage.set('barang_keluar', JSON.stringify(state.barangKeluar), true); }catch(e){ console.error(e); } }
 
 /* =========================================================
    HELPERS
@@ -903,13 +863,30 @@ document.getElementById('formMasuk').addEventListener('submit', async function(e
     keterangan: document.getElementById('mKet').value.trim(),
     createdAt: Date.now()
   };
-  state.barangMasuk.push(tx);
-  item.stok_berjalan = (Number(item.stok_berjalan)||0) + qty;
-  await saveBarangMasuk();
-  await saveMasterBarang();
-  showToast(`Barang masuk tersimpan: +${fmtNum(qty)} ${item.satuan||''} ${item.nama}`);
-  resetMasukForm();
-  renderMasukTable();
+  // Simpan transaksi barang masuk
+await addCollection("barang_masuk", tx);
+
+// Update stok barang
+item.stok_berjalan = (Number(item.stok_berjalan) || 0) + qty;
+
+// Simpan perubahan stok master barang
+await updateCollection(
+    "master_barang",
+    item.id,
+    item
+);
+
+// Reload data dari Firestore
+state.barangMasuk = await loadCollection("barang_masuk");
+state.masterBarang = await loadCollection("master_barang");
+
+showToast(`Barang masuk tersimpan: +${fmtNum(qty)} ${item.satuan || ''} ${item.nama}`);
+
+resetMasukForm();
+renderDashboard();
+renderMasukTable();
+renderBarangTable();
+renderPesanPage();
 });
 
 /* =========================================================
@@ -1169,9 +1146,9 @@ async function hapusUnit(id){
 
     if(!confirm("Yakin ingin menghapus unit ini?")) return;
 
-    state.unitMasuk = state.unitMasuk.filter(u => u.id !== id);
+    await deleteCollection("unit_masuk", id);
 
-    await saveUnitMasuk();
+    state.unitMasuk = await loadCollection("unit_masuk");
 
     renderUnitTable();
 
@@ -1190,7 +1167,13 @@ async function keluarkanUnit(id){
 
     unit.tgl_keluar = todayISO();
 
-    await saveUnitMasuk();
+    await updateCollection(
+        "unit_masuk",
+        unit.id,
+        unit
+    );
+
+    state.unitMasuk = await loadCollection("unit_masuk");
 
     renderUnitTable();
 
@@ -1221,7 +1204,13 @@ async function editUnit(id){
     unit.merk = merk;
     unit.jenis = jenis;
 
-    await saveUnitMasuk();
+    await updateCollection(
+        "unit_masuk",
+        unit.id,
+        unit
+    );
+
+    state.unitMasuk = await loadCollection("unit_masuk");
 
     renderUnitTable();
 
@@ -1272,9 +1261,12 @@ async function tambahUnit(){
 
     };
 
-    state.unitMasuk.push(unit);
+    await addCollection(
+    "unit_masuk",
+    unit
+    );
 
-    await saveUnitMasuk();
+    state.unitMasuk = await loadCollection("unit_masuk");
 
     renderUnitTable();
 
