@@ -1232,7 +1232,9 @@ async function tambahUnit(){
     showToast("Unit berhasil ditambahkan.");
 
 }
-init();
+window.addEventListener("firebase-ready", () => {
+    init();
+});
 </script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.0/firebase-app.js";
@@ -1265,7 +1267,7 @@ console.log("✅ Firebase Connected");
 const snapshot = await getDocs(collection(db, "master_barang"));
 console.log("Jumlah data master barang:", snapshot.size);
 
-// supaya bisa dipakai nanti
+// Export ke window
 window.db = db;
 window.doc = doc;
 window.getDoc = getDoc;
@@ -1274,6 +1276,9 @@ window.deleteDoc = deleteDoc;
 window.serverTimestamp = serverTimestamp;
 window.collection = collection;
 window.getDocs = getDocs;
+
+// Beri tahu script utama bahwa Firebase sudah siap
+window.dispatchEvent(new Event("firebase-ready"));
 </script>
 </body>
 </html>
