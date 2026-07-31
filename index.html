@@ -639,6 +639,10 @@ window.serverTimestamp = serverTimestamp;
 window.collection = collection;
 window.getDocs = getDocs;
 
+console.log("window.doc =", window.doc);
+console.log("typeof window.doc =", typeof window.doc);
+console.log("window.getDoc =", window.getDoc);
+console.log("typeof window.getDoc =", typeof window.getDoc);
 // Beri tahu script utama bahwa Firebase sudah siap
 window.dispatchEvent(new Event("firebase-ready"));
 </script>
@@ -706,6 +710,11 @@ window.storage = {
     return false;
   }
 };
+
+console.log("doc =", doc);
+console.log("typeof doc =", typeof doc);
+console.log("window.doc =", window.doc);
+console.log("typeof window.doc =", typeof window.doc);
 
 async function loadState(){
   try{
