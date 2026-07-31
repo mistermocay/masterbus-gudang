@@ -1179,61 +1179,44 @@ function closeUnitModal(){
     document.getElementById("modalUnit").style.display="none";
 
 }
-async function tambahUnit(){
-    function tambahUnit(){
-
+function tambahUnit() {
     openUnitModal();
-
 }
 
-    if(no_rangka === null) return;
+async function simpanUnit() {
 
-async function simpanUnit(){
-
-    const nomor_nb = document.getElementById("uNomorNB").value.trim();
-
-    const customer = document.getElementById("uCustomer").value.trim();
-
-    const merk = document.getElementById("uMerk").value.trim();
-
-    const jenis = document.getElementById("uJenis").value.trim();
-
+    const nomor_nb  = document.getElementById("uNomorNB").value.trim();
+    const customer  = document.getElementById("uCustomer").value.trim();
+    const merk      = document.getElementById("uMerk").value.trim();
+    const jenis     = document.getElementById("uJenis").value.trim();
     const no_rangka = document.getElementById("uRangka").value.trim();
 
+    if (!nomor_nb || !customer || !merk || !jenis) {
+        alert("Lengkapi data terlebih dahulu.");
+        return;
+    }
+
     const unit = {
-
         id: crypto.randomUUID(),
-
         nomor_nb,
-
         customer,
-
         merk,
-
         jenis,
-
         no_rangka,
-
         tgl_masuk: todayISO(),
-
         tgl_keluar: null
-
     };
 
-    await addCollection(
-    "unit_masuk",
-    unit
-    );
+    await addCollection("unit_masuk", unit);
 
     state.unitMasuk = await loadCollection("unit_masuk");
 
     renderUnitTable();
-
     populateNomorNBSelect();
 
-    showToast("Unit berhasil ditambahkan.");
+    closeUnitModal();
 
-}
+    showToast("Unit berhasil ditambahkan.");
 }
 window.addEventListener("firebase-ready", () => {
     init();
