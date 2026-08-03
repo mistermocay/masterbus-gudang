@@ -1165,7 +1165,7 @@ function renderUnitTable(){
         }
         <button
             class="btn btn-danger"
-            onclick="hapusUnit('${u.id}')">
+            onclick="console.log('ID:', '${u.id}'); hapusUnit('${u.id}')"
             🗑 Hapus
         </button>
     </td>
@@ -1251,11 +1251,25 @@ async function init(){
 }
 async function hapusUnit(id){
 
+    console.log("ID yang diterima:", id);
+
     if(!confirm("Yakin ingin menghapus unit ini?")) return;
 
-    await deleteCollection("unit_masuk", id);
+    try{
+
+        await deleteCollection("unit_masuk", id);
+
+        console.log("Berhasil delete document");
+
+    }catch(err){
+
+        console.error("Delete Error:", err);
+
+    }
 
     state.unitMasuk = await loadCollection("unit_masuk");
+
+    console.log("Data setelah reload:", state.unitMasuk);
 
     renderUnitTable();
 
