@@ -1326,55 +1326,76 @@ async function editUnit(id){
     showToast("Data unit berhasil diperbarui.");
 
 }
-function openUnitModal(){
 
-    document.getElementById("modalUnit").style.display="flex";
+async function tambahUnit(){
 
-}
+    openModal(
 
-function closeUnitModal(){
+        "Tambah Unit Baru",
 
-    document.getElementById("modalUnit").style.display="none";
+        `
+        <label>Nomor NB</label>
+        <input id="uNomorNB">
 
-}
-function tambahUnit() {
-    openUnitModal();
-}
+        <label>Customer</label>
+        <input id="uCustomer">
 
-async function simpanUnit() {
+        <label>Merk</label>
+        <input id="uMerk">
 
-    const nomor_nb  = document.getElementById("uNomorNB").value.trim();
-    const customer  = document.getElementById("uCustomer").value.trim();
-    const merk      = document.getElementById("uMerk").value.trim();
-    const jenis     = document.getElementById("uJenis").value.trim();
-    const no_rangka = document.getElementById("uRangka").value.trim();
+        <label>Jenis</label>
+        <input id="uJenis">
 
-    if (!nomor_nb || !customer || !merk || !jenis) {
-        alert("Lengkapi data terlebih dahulu.");
-        return;
-    }
+        <label>No. Rangka</label>
+        <input id="uRangka">
+        `,
 
-    const unit = {
-        id: crypto.randomUUID(),
-        nomor_nb,
-        customer,
-        merk,
-        jenis,
-        no_rangka,
-        tgl_masuk: todayISO(),
-        tgl_keluar: null
-    };
+        async ()=>{
 
-    await addCollection("unit_masuk", unit);
+            const unit={
 
-    state.unitMasuk = await loadCollection("unit_masuk");
+                id:crypto.randomUUID(),
 
-    renderUnitTable();
-    populateNomorNBSelect();
+                nomor_nb:document.getElementById("uNomorNB").value.trim(),
 
-    closeUnitModal();
+                customer:document.getElementById("uCustomer").value.trim(),
 
-    showToast("Unit berhasil ditambahkan.");
+                merk:document.getElementById("uMerk").value.trim(),
+
+                jenis:document.getElementById("uJenis").value.trim(),
+
+                no_rangka:document.getElementById("uRangka").value.trim(),
+
+                tgl_masuk:todayISO(),
+
+                tgl_keluar:null
+
+            };
+
+            if(!unit.nomor_nb){
+
+                showToast("Nomor NB wajib diisi.");
+
+                return;
+
+            }
+
+            await addCollection("unit_masuk", unit);
+
+            state.unitMasuk = await loadCollection("unit_masuk");
+
+            renderUnitTable();
+
+            populateNomorNBSelect();
+
+            closeModal();
+
+            showToast("Unit berhasil ditambahkan.");
+
+        }
+
+    );
+
 }
 window.addEventListener("firebase-ready", () => {
     init();
