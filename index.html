@@ -1397,6 +1397,68 @@ async function tambahUnit(){
     );
 
 }
+async function tambahUnit(){
+
+    openModal(
+
+        "Tambah Unit Baru",
+
+        `
+        <label>Nomor NB</label>
+        <input id="uNomorNB">
+
+        <label>Customer</label>
+        <input id="uCustomer">
+
+        <label>Merk</label>
+        <input id="uMerk">
+
+        <label>Jenis</label>
+        <input id="uJenis">
+
+        <label>No. Rangka</label>
+        <input id="uRangka">
+        `,
+
+        async ()=>{
+
+            const nomor_nb  = document.getElementById("uNomorNB").value.trim();
+            const customer  = document.getElementById("uCustomer").value.trim();
+            const merk      = document.getElementById("uMerk").value.trim();
+            const jenis     = document.getElementById("uJenis").value.trim();
+            const no_rangka = document.getElementById("uRangka").value.trim();
+
+            if(!nomor_nb){
+                showToast("Nomor NB wajib diisi.", true);
+                return;
+            }
+
+            const unit = {
+                nomor_nb,
+                customer,
+                merk,
+                jenis,
+                no_rangka,
+                tgl_masuk: todayISO(),
+                tgl_keluar: null
+            };
+
+            await addCollection("unit_masuk", unit);
+
+            state.unitMasuk = await loadCollection("unit_masuk");
+
+            renderUnitTable();
+            populateNomorNBSelect();
+
+            closeModal();
+
+            showToast("Unit berhasil ditambahkan.");
+
+        }
+
+    );
+
+}
 window.addEventListener("firebase-ready", () => {
     init();
 });
@@ -1423,43 +1485,6 @@ function closeModal(){
 <script>
 console.log("window.doc =", window.doc);
 </script>
-<div id="modalUnit" class="modal-overlay" style="display:none;">
-    <div class="modal-box">
-
-        <h2>Tambah Unit Masuk</h2>
-
-        <div class="form-group">
-            <label>Nomor NB</label>
-            <input id="uNomorNB">
-        </div>
-
-        <div class="form-group">
-            <label>Customer</label>
-            <input id="uCustomer">
-        </div>
-
-        <div class="form-group">
-            <label>Merk</label>
-            <input id="uMerk">
-        </div>
-
-        <div class="form-group">
-            <label>Jenis</label>
-            <input id="uJenis">
-        </div>
-
-        <div class="form-group">
-            <label>No Rangka</label>
-            <input id="uRangka">
-        </div>
-
-        <div class="modal-footer">
-            <button onclick="closeUnitModal()">Batal</button>
-            <button onclick="simpanUnit()">Simpan</button>
-        </div>
-
-    </div>
-</div>
 <!-- ================= MODAL ================= -->
 
 <div id="modalOverlay" class="modal-overlay">
