@@ -247,6 +247,164 @@
     .sidebar{ position:fixed; z-index:50; transform:translateX(-100%); transition:.2s; }
     .sidebar.open{ transform:translateX(0); }
   }
+
+  /* ===========================
+   MODAL
+=========================== */
+
+.modal-overlay{
+
+position:fixed;
+inset:0;
+background:rgba(0,0,0,.65);
+
+display:none;
+
+align-items:center;
+
+justify-content:center;
+
+backdrop-filter:blur(6px);
+
+z-index:9999;
+
+animation:fadeIn .2s;
+}
+
+.modal-overlay.show{
+
+display:flex;
+
+}
+
+.modal{
+
+width:650px;
+
+max-width:95%;
+
+background:#111827;
+
+border:1px solid #293548;
+
+border-radius:14px;
+
+box-shadow:0 25px 60px rgba(0,0,0,.45);
+
+animation:pop .2s;
+}
+
+.modal-header{
+
+display:flex;
+
+justify-content:space-between;
+
+align-items:center;
+
+padding:18px 22px;
+
+border-bottom:1px solid #263244;
+
+}
+
+.modal-header h3{
+
+margin:0;
+
+font-size:20px;
+
+}
+
+.modal-body{
+
+padding:22px;
+
+display:grid;
+
+gap:14px;
+
+}
+
+.modal-body label{
+
+font-size:13px;
+
+color:#94a3b8;
+
+}
+
+.modal-body input{
+
+width:100%;
+
+padding:10px 14px;
+
+border-radius:8px;
+
+border:1px solid #2d3c52;
+
+background:#0f172a;
+
+color:white;
+
+}
+
+.modal-footer{
+
+padding:18px 22px;
+
+display:flex;
+
+justify-content:flex-end;
+
+gap:12px;
+
+border-top:1px solid #263244;
+
+}
+
+.modal-close{
+
+background:none;
+
+border:none;
+
+color:white;
+
+font-size:22px;
+
+cursor:pointer;
+
+}
+
+@keyframes fadeIn{
+
+from{opacity:0;}
+
+to{opacity:1;}
+
+}
+
+@keyframes pop{
+
+from{
+
+opacity:0;
+
+transform:scale(.95);
+
+}
+
+to{
+
+opacity:1;
+
+transform:scale(1);
+
+}
+
+}
 </style>
 </head>
 <body>
@@ -1221,6 +1379,23 @@ async function simpanUnit() {
 window.addEventListener("firebase-ready", () => {
     init();
 });
+function openModal(title, bodyHTML, onSave){
+
+    document.getElementById("modalTitle").innerHTML=title;
+
+    document.getElementById("modalBody").innerHTML=bodyHTML;
+
+    document.getElementById("modalOverlay").classList.add("show");
+
+    document.getElementById("modalSaveBtn").onclick=onSave;
+
+}
+
+function closeModal(){
+
+    document.getElementById("modalOverlay").classList.remove("show");
+
+}
 </script>
 <script type="module" src="./firebase.js"></script>
 
@@ -1263,6 +1438,37 @@ console.log("window.doc =", window.doc);
         </div>
 
     </div>
+</div>
+<!-- ================= MODAL ================= -->
+
+<div id="modalOverlay" class="modal-overlay">
+
+    <div class="modal">
+
+        <div class="modal-header">
+
+            <h3 id="modalTitle">Tambah Unit</h3>
+
+            <button class="modal-close" onclick="closeModal()">✕</button>
+
+        </div>
+
+        <div class="modal-body" id="modalBody">
+
+        </div>
+
+        <div class="modal-footer">
+
+            <button class="btn" onclick="closeModal()">Batal</button>
+
+            <button class="btn btn-primary" id="modalSaveBtn">
+                Simpan
+            </button>
+
+        </div>
+
+    </div>
+
 </div>
 </body>
 </html>
