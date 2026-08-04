@@ -1250,6 +1250,16 @@ function renderBarangTable(){
       <td class="right mono">${fmtNum(i.stok_berjalan)}</td>
       <td class="muted">${i.satuan||'-'}</td>
       <td><span class="badge ${s==='AMAN'?'badge-aman':'badge-pesan'}">${s}</span></td>
+      <td class="actions">
+      <button class="btn small"
+        onclick="editBarang('${i.kode}')">
+        Edit
+      </button>
+      <button class="btn danger small"
+        onclick="hapusBarang('${i.kode}')">
+        Hapus
+     </button>
+</td>
     </tr>`;
   }).join('') : `<tr class="empty-row"><td colspan="7">Tidak ada barang yang cocok.</td></tr>`;
 }
