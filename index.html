@@ -1605,13 +1605,19 @@ document.addEventListener("keydown", function(e){
     }
 
 });
-document.getElementById("modalOverlay").addEventListener("click", function(e){
+window.addEventListener("DOMContentLoaded", () => {
 
-    if(e.target === this){
+    const overlay = document.getElementById("modalOverlay");
 
-        closeModal();
+    console.log("overlay =", overlay);
 
-    }
+    overlay.addEventListener("click", function(e){
+
+        if(e.target === this){
+            closeModal();
+        }
+
+    });
 
 });
 async function tambahBarang(){
