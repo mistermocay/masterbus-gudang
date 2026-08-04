@@ -890,6 +890,7 @@ function renderDashboard(){
   ].sort((a,b)=> new Date(b.tanggal)-new Date(a.tanggal) || (b.createdAt||0)-(a.createdAt||0)).slice(0,10);
 
   const tbody = document.getElementById('tblAktivitas');
+  console.log("Rows yang akan dirender:", rows);
   tbody.innerHTML = acts.length ? acts.map(a=>`
     <tr>
       <td class="mono">${fmtDate(a.tanggal)}</td>
@@ -1110,14 +1111,36 @@ function renderUnitPage(){
   renderUnitTable();
 }
 function renderUnitTable(){
+
+  console.log("===== RENDER UNIT TABLE =====");
+  console.log("state.unitMasuk =", state.unitMasuk);
+
   const q = (document.getElementById('searchUnit').value||'').toLowerCase();
   const statusF = document.getElementById('filterUnitStatus').value;
+
   const rows = state.unitMasuk.filter(u=>{
-    const matchQ = !q || (u.nomor_nb||'').toLowerCase().includes(q) || (u.customer||'').toLowerCase().includes(q) || (u.merk||'').toLowerCase().includes(q);
+
+    const matchQ = !q ||
+      (u.nomor_nb||'').toLowerCase().includes(q) ||
+      (u.customer||'').toLowerCase().includes(q) ||
+      (u.merk||'').toLowerCase().includes(q);
+
     const active = unitIsActive(u);
-    const matchS = !statusF || (statusF==='digudang' ? active : !active);
+
+    const matchS = !statusF ||
+      (statusF==='digudang' ? active : !active);
+
     return matchQ && matchS;
-  }).sort((a,b)=> String(a.nomor_nb||'').localeCompare(String(b.nomor_nb||''), undefined, {numeric:true}));
+
+  }).sort((a,b)=>
+    String(a.nomor_nb||'').localeCompare(
+      String(b.nomor_nb||''),
+      undefined,
+      {numeric:true}
+    )
+  );
+
+  console.log("Rows =", rows);
 
   document.getElementById('unitCount').textContent = rows.length + ' unit';
   document.getElementById('tblUnit').innerHTML = rows.length
