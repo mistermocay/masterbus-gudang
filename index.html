@@ -1119,13 +1119,30 @@ document.getElementById('formKeluar').addEventListener('submit', async function(
     keperluan: document.getElementById('kKeperluan').value.trim(),
     createdAt: Date.now()
   };
-  state.barangKeluar.push(tx);
-  item.stok_berjalan = (Number(item.stok_berjalan)||0) - qty;
-  await saveBarangKeluar();
-  await saveMasterBarang();
-  showToast(`Barang keluar tersimpan: -${fmtNum(qty)} ${item.satuan||''} ${item.nama} → ${nomorNB}`);
-  resetKeluarForm();
-  renderKeluarTable();
+  await addCollection("barang_keluar", tx);
+
+item.stok_berjalan =
+    (Number(item.stok_berjalan) || 0) - qty;
+
+await updateCollection(
+    "master_barang",
+    item.id,
+    item
+);
+
+// Reload dari Firestore
+state.barangKeluar = await loadCollection("barang_keluar");
+state.masterBarang = await loadCollection("master_barang");
+
+showToast(
+    `Barang keluar tersimpan: -${fmtNum(qty)} ${item.satuan || ''} ${item.nama} → ${nomorNB}`
+);
+
+resetKeluarForm();
+
+renderKeluarTable();
+renderBarangTable();
+renderDashboard();
 });
 
 /* =========================================================
