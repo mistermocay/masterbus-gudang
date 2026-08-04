@@ -1518,7 +1518,10 @@ async function tambahUnit(){
 
         <label>No. Rangka</label>
         <input id="uRangka">
-        `,
+
+        <label>Tanggal Masuk</label>
+        <input type="date" id="uTanggal" value="${todayISO()}">
+        `
 
         async ()=>{
 
@@ -1536,7 +1539,7 @@ async function tambahUnit(){
 
                 no_rangka:document.getElementById("uRangka").value.trim(),
 
-                tgl_masuk:todayISO(),
+                tgl_masuk: document.getElementById("uTanggal").value,
 
                 tgl_keluar:null
 
