@@ -1262,34 +1262,42 @@ async function hapusUnit(id){
         `
         <div style="font-size:16px;line-height:1.8">
 
-            <div style="font-size:50px;text-align:center;margin-bottom:15px">
-                🗑️
-            </div>
+            <div style="font-size:50px;text-align:center">🗑️</div>
 
-            <p style="text-align:center;font-size:18px;font-weight:bold;color:#ef4444">
+            <p style="text-align:center;color:#ef4444;font-size:18px">
                 Apakah Anda yakin?
             </p>
 
-            <hr style="margin:15px 0;border-color:#334155">
+            <hr>
 
             <b>Nomor NB</b><br>
             ${unit.nomor_nb}<br><br>
 
             <b>Customer</b><br>
-            ${unit.customer}<br><br>
-
-            <span style="color:#fca5a5">
-                Data yang dihapus tidak dapat dikembalikan.
-            </span>
+            ${unit.customer}
 
         </div>
         `,
 
         async ()=>{
 
-            await deleteCollection("unit_masuk", id);
+            console.log("ID yang akan dihapus:", id);
+
+            try{
+
+                await deleteCollection("unit_masuk", id);
+
+                console.log("DELETE BERHASIL");
+
+            }catch(e){
+
+                console.error("DELETE GAGAL", e);
+
+            }
 
             state.unitMasuk = await loadCollection("unit_masuk");
+
+            console.log(state.unitMasuk);
 
             renderUnitTable();
 
