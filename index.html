@@ -758,6 +758,38 @@ transform:scale(1);
 
 <div class="toast" id="toast"><span id="toastMsg"></span></div>
 
+<!-- ================= MODAL ================= -->
+
+<div id="modalOverlay" class="modal-overlay">
+
+    <div class="modal">
+
+        <div class="modal-header">
+
+            <h3 id="modalTitle">Tambah Unit</h3>
+
+            <button class="modal-close" onclick="closeModal()">✕</button>
+
+        </div>
+
+        <div class="modal-body" id="modalBody">
+
+        </div>
+
+        <div class="modal-footer">
+
+            <button class="btn" onclick="closeModal()">Batal</button>
+
+            <button class="btn btn-primary" id="modalSaveBtn">
+                Simpan
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
 <script>
     // seluruh kode JavaScript yang sekarang
 </script>
@@ -1701,38 +1733,7 @@ async function tambahBarang(){
 <script>
 console.log("window.doc =", window.doc);
 </script>
-
-
-<!-- ================= MODAL ================= -->
-
-<div id="modalOverlay" class="modal-overlay">
-
-    <div class="modal">
-
-        <div class="modal-header">
-
-            <h3 id="modalTitle">Tambah Unit</h3>
-
-            <button class="modal-close" onclick="closeModal()">✕</button>
-
-        </div>
-
-        <div class="modal-body" id="modalBody">
-
-        </div>
-
-        <div class="modal-footer">
-
-            <button class="btn" onclick="closeModal()">Batal</button>
-
-            <button class="btn btn-primary" id="modalSaveBtn">
-                Simpan
-            </button>
-
-        </div>
-
-    </div>
-
-</div>
 </body>
 </html>
+
+
