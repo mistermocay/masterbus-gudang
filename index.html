@@ -898,7 +898,6 @@ function renderDashboard(){
   ].sort((a,b)=> new Date(b.tanggal)-new Date(a.tanggal) || (b.createdAt||0)-(a.createdAt||0)).slice(0,10);
 
   const tbody = document.getElementById('tblAktivitas');
-  console.log("Rows yang akan dirender:", rows);
   tbody.innerHTML = acts.length ? acts.map(a=>`
     <tr>
       <td class="mono">${fmtDate(a.tanggal)}</td>
