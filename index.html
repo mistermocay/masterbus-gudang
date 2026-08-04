@@ -1568,72 +1568,7 @@ async function tambahUnit(){
     );
 
 }
-async function tambahUnit(){
 
-    openModal(
-
-        "Tambah Unit Baru",
-
-        `
-    <label>Nomor NB</label>
-    <input id="uNomorNB">
-
-    <label>Customer</label>
-    <input id="uCustomer">
-
-    <label>Merk</label>
-    <input id="uMerk">
-
-    <label>Jenis</label>
-    <input id="uJenis">
-
-    <label>No. Rangka</label>
-    <input id="uRangka">
-
-    <label>Tanggal Masuk</label>
-    <input type="date" id="uTanggal" value="${todayISO()}">
-`,
-
-        async ()=>{
-
-            const nomor_nb  = document.getElementById("uNomorNB").value.trim();
-            const customer  = document.getElementById("uCustomer").value.trim();
-            const merk      = document.getElementById("uMerk").value.trim();
-            const jenis     = document.getElementById("uJenis").value.trim();
-            const no_rangka = document.getElementById("uRangka").value.trim();
-            const tgl_masuk = document.getElementById("uTanggal").value;
-
-            if(!nomor_nb){
-                showToast("Nomor NB wajib diisi.", true);
-                return;
-            }
-
-            const unit = {
-                nomor_nb,
-                customer,
-                merk,
-                jenis,
-                no_rangka,
-                tgl_masuk: tgl_masuk,
-                tgl_keluar: null
-            };
-
-            await addCollection("unit_masuk", unit);
-
-            state.unitMasuk = await loadCollection("unit_masuk");
-
-            renderUnitTable();
-            populateNomorNBSelect();
-
-            closeModal();
-
-            showToast("Unit berhasil ditambahkan.");
-
-        }
-
-    );
-
-}
 window.addEventListener("firebase-ready", () => {
     init();
 });
