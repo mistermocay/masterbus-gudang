@@ -1407,23 +1407,23 @@ async function editUnit(id){
 
         `
         <label>Nomor NB</label>
-        <input id="eNomorNB" value="${unit.nomor_nb || ''}">
+        <input id="uNomorNB">
 
         <label>Customer</label>
-        <input id="eCustomer" value="${unit.customer || ''}">
+        <input id="uCustomer">
 
         <label>Merk</label>
-        <input id="eMerk" value="${unit.merk || ''}">
+        <input id="uMerk">
 
         <label>Jenis</label>
-        <input id="eJenis" value="${unit.jenis || ''}">
+        <input id="uJenis">
 
         <label>No. Rangka</label>
-        <input id="eRangka" value="${unit.no_rangka || ''}">
+        <input id="uRangka">
 
         <label>Tanggal Masuk</label>
         <input type="date" id="uTanggal" value="${todayISO()}">
-        `,
+`,
 
         async ()=>{
 
@@ -1531,21 +1531,24 @@ async function tambahUnit(){
         "Tambah Unit Baru",
 
         `
-        <label>Nomor NB</label>
-        <input id="uNomorNB">
+    <label>Nomor NB</label>
+    <input id="uNomorNB">
 
-        <label>Customer</label>
-        <input id="uCustomer">
+    <label>Customer</label>
+    <input id="uCustomer">
 
-        <label>Merk</label>
-        <input id="uMerk">
+    <label>Merk</label>
+    <input id="uMerk">
 
-        <label>Jenis</label>
-        <input id="uJenis">
+    <label>Jenis</label>
+    <input id="uJenis">
 
-        <label>No. Rangka</label>
-        <input id="uRangka">
-        `,
+    <label>No. Rangka</label>
+    <input id="uRangka">
+
+    <label>Tanggal Masuk</label>
+    <input type="date" id="uTanggal" value="${todayISO()}">
+`,
 
         async ()=>{
 
