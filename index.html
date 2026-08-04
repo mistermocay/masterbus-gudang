@@ -1164,10 +1164,10 @@ function renderUnitTable(){
             : ''
         }
         <button
-            class="btn btn-danger"
-            onclick="console.log('ID:', '${u.id}'); hapusUnit('${u.id}')"
-            🗑 Hapus
-        </button>
+        class="btn btn-danger"
+        onclick="console.log('ID:', '${u.id}'); hapusUnit('${u.id}')">
+        🗑 Hapus
+    </button>
     </td>
 </tr>
 `).join('')
@@ -1284,60 +1284,106 @@ async function keluarkanUnit(id){
 
     if(!unit) return;
 
-    if(!confirm("Apakah unit ini sudah keluar dari gudang?")) return;
+    openModal(
 
-    unit.tgl_keluar = todayISO();
+        "Konfirmasi Unit Keluar",
 
-    await updateCollection(
-        "unit_masuk",
-        unit.id,
-        unit
+        `
+        <div style="font-size:16px;line-height:1.8">
+
+            <p>Apakah Anda yakin ingin mengeluarkan unit berikut?</p>
+
+            <hr style="margin:15px 0;border-color:#334155">
+
+            <b>Nomor NB</b><br>
+            ${unit.nomor_nb}<br><br>
+
+            <b>Customer</b><br>
+            ${unit.customer}<br><br>
+
+            <b>Merk / Jenis</b><br>
+            ${unit.merk} / ${unit.jenis}
+
+        </div>
+        `,
+
+        async ()=>{
+
+            unit.tgl_keluar = todayISO();
+
+            await updateCollection(
+                "unit_masuk",
+                unit.id,
+                unit
+            );
+
+            state.unitMasuk = await loadCollection("unit_masuk");
+
+            renderUnitTable();
+
+            populateNomorNBSelect();
+
+            closeModal();
+
+            showToast("Status unit berhasil diubah menjadi KELUAR.");
+
+        }
+
     );
-
-    state.unitMasuk = await loadCollection("unit_masuk");
-
-    renderUnitTable();
-
-    populateNomorNBSelect();
-
-    showToast("Status unit berhasil diubah menjadi KELUAR.");
 
 }
 async function editUnit(id){
 
     const unit = state.unitMasuk.find(u => u.id === id);
-
     if(!unit) return;
 
-    const customer = prompt("Customer", unit.customer);
+    openModal(
 
-    if(customer === null) return;
+        "Edit Data Unit",
 
-    const merk = prompt("Merk", unit.merk);
+        `
+        <label>Nomor NB</label>
+        <input id="eNomorNB" value="${unit.nomor_nb || ''}">
 
-    if(merk === null) return;
+        <label>Customer</label>
+        <input id="eCustomer" value="${unit.customer || ''}">
 
-    const jenis = prompt("Jenis", unit.jenis);
+        <label>Merk</label>
+        <input id="eMerk" value="${unit.merk || ''}">
 
-    if(jenis === null) return;
+        <label>Jenis</label>
+        <input id="eJenis" value="${unit.jenis || ''}">
 
-    unit.customer = customer;
-    unit.merk = merk;
-    unit.jenis = jenis;
+        <label>No. Rangka</label>
+        <input id="eRangka" value="${unit.no_rangka || ''}">
+        `,
 
-    await updateCollection(
-        "unit_masuk",
-        unit.id,
-        unit
+        async ()=>{
+
+            unit.nomor_nb  = document.getElementById("eNomorNB").value.trim();
+            unit.customer  = document.getElementById("eCustomer").value.trim();
+            unit.merk      = document.getElementById("eMerk").value.trim();
+            unit.jenis     = document.getElementById("eJenis").value.trim();
+            unit.no_rangka = document.getElementById("eRangka").value.trim();
+
+            await updateCollection(
+                "unit_masuk",
+                unit.id,
+                unit
+            );
+
+            state.unitMasuk = await loadCollection("unit_masuk");
+
+            renderUnitTable();
+            populateNomorNBSelect();
+
+            closeModal();
+
+            showToast("Data unit berhasil diperbarui.");
+
+        }
+
     );
-
-    state.unitMasuk = await loadCollection("unit_masuk");
-
-    renderUnitTable();
-
-    populateNomorNBSelect();
-
-    showToast("Data unit berhasil diperbarui.");
 
 }
 
