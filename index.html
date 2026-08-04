@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
+<link href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.css" rel="stylesheet">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SIGUDANG — Sistem Gudang</title>
@@ -966,9 +967,32 @@ function renderDashboard(){
    RENDER: BARANG MASUK
    ========================================================= */
 function populateKodeSelect(selectEl){
-  selectEl.innerHTML = '<option value="">— pilih kode barang —</option>' +
-    state.masterBarang.slice().sort((a,b)=> a.nama.localeCompare(b.nama))
-      .map(i=> `<option value="${i.kode}">${i.kode} — ${i.nama}</option>`).join('');
+
+    selectEl.innerHTML =
+        '<option value="">Cari kode / nama barang...</option>' +
+
+        state.masterBarang
+            .slice()
+            .sort((a,b)=>a.nama.localeCompare(b.nama))
+            .map(i => `
+                <option value="${i.kode}">
+                    ${i.kode} — ${i.nama}
+                </option>
+            `).join('');
+
+    // Hapus TomSelect lama kalau sudah ada
+    if(selectEl.tomselect){
+        selectEl.tomselect.destroy();
+    }
+
+    // Aktifkan fitur search
+    new TomSelect(selectEl,{
+        create:false,
+        maxItems:1,
+        searchField:["text","value"],
+        placeholder:"Cari kode atau nama barang..."
+    });
+
 }
 
 function renderMasukPage(){
@@ -1733,6 +1757,7 @@ async function tambahBarang(){
 <script>
 console.log("window.doc =", window.doc);
 </script>
+<script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
 </body>
 </html>
 
