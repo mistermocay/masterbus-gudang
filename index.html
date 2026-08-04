@@ -1251,31 +1251,57 @@ async function init(){
 }
 async function hapusUnit(id){
 
-    console.log("ID yang diterima:", id);
+    const unit = state.unitMasuk.find(u => u.id === id);
 
-    if(!confirm("Yakin ingin menghapus unit ini?")) return;
+    if(!unit) return;
 
-    try{
+    openModal(
 
-        await deleteCollection("unit_masuk", id);
+        "Hapus Unit",
 
-        console.log("Berhasil delete document");
+        `
+        <div style="font-size:16px;line-height:1.8">
 
-    }catch(err){
+            <div style="font-size:50px;text-align:center;margin-bottom:15px">
+                🗑️
+            </div>
 
-        console.error("Delete Error:", err);
+            <p style="text-align:center;font-size:18px;font-weight:bold;color:#ef4444">
+                Apakah Anda yakin?
+            </p>
 
-    }
+            <hr style="margin:15px 0;border-color:#334155">
 
-    state.unitMasuk = await loadCollection("unit_masuk");
+            <b>Nomor NB</b><br>
+            ${unit.nomor_nb}<br><br>
 
-    console.log("Data setelah reload:", state.unitMasuk);
+            <b>Customer</b><br>
+            ${unit.customer}<br><br>
 
-    renderUnitTable();
+            <span style="color:#fca5a5">
+                Data yang dihapus tidak dapat dikembalikan.
+            </span>
 
-    populateNomorNBSelect();
+        </div>
+        `,
 
-    showToast("Unit berhasil dihapus.");
+        async ()=>{
+
+            await deleteCollection("unit_masuk", id);
+
+            state.unitMasuk = await loadCollection("unit_masuk");
+
+            renderUnitTable();
+
+            populateNomorNBSelect();
+
+            closeModal();
+
+            showToast("Unit berhasil dihapus.");
+
+        }
+
+    );
 
 }
 async function keluarkanUnit(id){
