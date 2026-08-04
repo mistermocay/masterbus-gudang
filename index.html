@@ -763,16 +763,24 @@ async function loadCollection(name){
     );
 
     return snap.docs.map(d => ({
-        id: d.id,
-          ...d.data()
-    }));
+    id: d.id,
+    ...d.data()
+}));
 }
 
 async function addCollection(name, data){
-    await window.addDoc(
-        window.collection(window.db, name),
-        data
+
+    const id = data.id || crypto.randomUUID();
+
+    await window.setDoc(
+        window.doc(window.db, name, id),
+        {
+            ...data,
+            id
+        }
     );
+
+    return id;
 }
 
 async function updateCollection(name, id, data){
