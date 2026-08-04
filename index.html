@@ -1420,6 +1420,9 @@ async function editUnit(id){
 
         <label>No. Rangka</label>
         <input id="eRangka" value="${unit.no_rangka || ''}">
+
+        <label>Tanggal Masuk</label>
+        <input type="date" id="uTanggal" value="${todayISO()}">
         `,
 
         async ()=>{
@@ -1551,6 +1554,7 @@ async function tambahUnit(){
             const merk      = document.getElementById("uMerk").value.trim();
             const jenis     = document.getElementById("uJenis").value.trim();
             const no_rangka = document.getElementById("uRangka").value.trim();
+            const tgl_masuk = document.getElementById("uTanggal").value;
 
             if(!nomor_nb){
                 showToast("Nomor NB wajib diisi.", true);
@@ -1563,7 +1567,7 @@ async function tambahUnit(){
                 merk,
                 jenis,
                 no_rangka,
-                tgl_masuk: todayISO(),
+                tgl_masuk: tgl_masuk,
                 tgl_keluar: null
             };
 
