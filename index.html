@@ -824,10 +824,21 @@ console.log("typeof window.doc =", typeof window.doc);
 
 async function loadState(){
 
+    console.log("LOAD MASTER");
     state.masterBarang = await window.loadCollection("master_barang");
+    console.log(state.masterBarang);
+
+    console.log("LOAD UNIT");
     state.unitMasuk = await window.loadCollection("unit_masuk");
+    console.log(state.unitMasuk);
+
+    console.log("LOAD MASUK");
     state.barangMasuk = await window.loadCollection("barang_masuk");
+    console.log(state.barangMasuk);
+
+    console.log("LOAD KELUAR");
     state.barangKeluar = await window.loadCollection("barang_keluar");
+    console.log(state.barangKeluar);
 
 }
 
