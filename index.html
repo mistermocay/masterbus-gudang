@@ -814,61 +814,6 @@ async function hapusBarang(kode){
 
 }
 
-editMode = false;
-editKodeBarang = null;
-
-document.getElementById("modalBarangTitle").textContent = "Tambah Barang";
-
-document.getElementById("barangKode").disabled = false;
-
-document.getElementById("formBarang").reset();
-
-async function simpanBarang(){
-
-    const barang = {
-        kode: document.getElementById("barangKode").value.trim(),
-        nama: document.getElementById("barangNama").value.trim(),
-        kategori: document.getElementById("barangKategori").value.trim(),
-        lokasi: document.getElementById("barangLokasi").value.trim(),
-        stok: Number(document.getElementById("barangStok").value),
-        satuan: document.getElementById("barangSatuan").value.trim(),
-        status: document.getElementById("barangStatus").value
-    };
-
-    if(editMode){
-
-        const index = state.masterBarang.findIndex(
-            b => b.kode === editKodeBarang
-        );
-
-        if(index !== -1){
-
-            state.masterBarang[index] = barang;
-
-        }
-
-    }else{
-
-        state.masterBarang.push(barang);
-
-    }
-
-    await saveMasterBarang();
-
-    renderBarangTable();
-
-    renderDashboard();
-
-    closeModal("modalBarang");
-
-    showToast(
-        editMode
-            ? "Barang berhasil diperbarui"
-            : "Barang berhasil ditambahkan"
-    );
-
-}
-
 async function loadCollection(name){
     const snap = await window.getDocs(
         window.collection(window.db, name)
