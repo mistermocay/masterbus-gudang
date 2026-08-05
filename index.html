@@ -1760,31 +1760,56 @@ async function editUnit(id){
 
         `
         <label>Nomor NB</label>
-        <input id="uNomorNB">
+        <input
+            id="uNomorNB"
+            value="${unit.nomor_nb || ''}">
 
         <label>Customer</label>
-        <input id="uCustomer">
+        <input
+            id="uCustomer"
+            value="${unit.customer || ''}">
 
         <label>Merk</label>
-        <input id="uMerk">
+        <input
+            id="uMerk"
+            value="${unit.merk || ''}">
 
         <label>Jenis</label>
-        <input id="uJenis">
+        <input
+            id="uJenis"
+            value="${unit.jenis || ''}">
 
         <label>No. Rangka</label>
-        <input id="uRangka">
+        <input
+            id="uRangka"
+            value="${unit.no_rangka || ''}">
 
         <label>Tanggal Masuk</label>
-        <input type="date" id="uTanggal" value="${todayISO()}">
-`,
+        <input
+            type="date"
+            id="uTanggal"
+            value="${unit.tgl_masuk || todayISO()}">
+        `,
 
         async ()=>{
 
-            unit.nomor_nb  = document.getElementById("eNomorNB").value.trim();
-            unit.customer  = document.getElementById("eCustomer").value.trim();
-            unit.merk      = document.getElementById("eMerk").value.trim();
-            unit.jenis     = document.getElementById("eJenis").value.trim();
-            unit.no_rangka = document.getElementById("eRangka").value.trim();
+          unit.nomor_nb =
+            document.getElementById("uNomorNB").value.trim();
+
+          unit.customer =
+            document.getElementById("uCustomer").value.trim();
+
+          unit.merk =
+            document.getElementById("uMerk").value.trim();
+
+          unit.jenis =
+            document.getElementById("uJenis").value.trim();
+
+          unit.no_rangka =
+            document.getElementById("uRangka").value.trim();
+
+          unit.tgl_masuk =
+            document.getElementById("uTanggal").value;
 
             await updateCollection(
                 "unit_masuk",
