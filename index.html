@@ -702,14 +702,23 @@ transform:scale(1);
             <input type="text" id="kDivisi" required placeholder="mis. Electrical, Painting">
           </div>
           <div class="field span2">
-            <label>Nomor NB (Unit Masuk) *</label>
-            <select id="kNomorNB" required></select>
-            <div class="hint">Hanya menampilkan unit yang masih tercatat di gudang (belum keluar).</div>
+
+          <label>Nomor NB (Unit Masuk)</label>
+
+          <select id="kNomorNB"></select>
+
+          <input
+              type="text"
+              id="kNomorNBManual"
+              placeholder="Isi Nomor NB manual..."
+              style="display:none;margin-top:10px;">
+
+          <div class="hint">
+              Pilih "Lainnya" jika unit belum ada pada daftar.
           </div>
-          <div class="field span2" id="kManualWrap" style="display:none;">
-            <label>Keterangan Unit Manual</label>
-            <input type="text" id="kNomorNBManual" placeholder="mis. GAWI 0668 / Prototype / Fiber">
-          </div>
+
+      </div>
+      
           <div class="field span2">
             <label>Keperluan</label>
             <input type="text" id="kKeperluan" required placeholder="mis. GAWI, produksi, maintenance">
@@ -1028,7 +1037,7 @@ function itemStatus(item){
   const threshold = (item.stok_min===null||item.stok_min===undefined) ? 0 : item.stok_min;
   return item.stok_berjalan <= threshold ? 'PESAN' : 'AMAN';
 }
-function findItem(kode){ return state.masterBarang.find(i => String(i.kode) === String(kode)); }
+function findItem(kode){ return state.masterBarang.find(i=>i.kode==kode); }
 function showToast(msg, isErr){
   const t = document.getElementById('toast');
   document.getElementById('toastMsg').textContent = msg;
@@ -1304,11 +1313,39 @@ function populateNomorNBSelect(){
 }
 
 function renderKeluarPage(){
-  document.getElementById('kTanggal').value = document.getElementById('kTanggal').value || todayISO();
-  populateKodeSelect(document.getElementById('kKode'));
-  populateNomorNBSelect();
-  renderKeluarTable();
+
+    document.getElementById('kTanggal').value =
+        document.getElementById('kTanggal').value || todayISO();
+
+    populateKodeSelect(document.getElementById('kKode'));
+
+    populateNomorNBSelect();
+
+    renderKeluarTable();
+
 }
+
+// ===== TARUH DI SINI =====
+
+document.getElementById("kNomorNB").addEventListener("change", function(){
+
+    const manual = document.getElementById("kNomorNBManual");
+
+    if(this.value === "__manual__"){
+
+        manual.style.display = "block";
+        manual.required = true;
+        manual.focus();
+
+    }else{
+
+        manual.style.display = "none";
+        manual.required = false;
+        manual.value = "";
+
+    }
+
+});
 function renderKeluarTable(filter=''){
   const q = (filter||document.getElementById('searchKeluar').value||'').toLowerCase();
   const rows = state.barangKeluar
@@ -1674,6 +1711,31 @@ async function hapusUnit(id){
                 renderUnitTable();
 
                 populateNomorNBSelect();
+                const kNomorNB = document.getElementById("kNomorNB");
+
+kNomorNB.addEventListener("change", function(){
+
+    const manual = document.getElementById("kNomorNBManual");
+
+    if(this.value === "__manual__"){
+
+        manual.style.display = "block";
+
+        manual.required = true;
+
+        manual.focus();
+
+    }else{
+
+        manual.style.display = "none";
+
+        manual.required = false;
+
+        manual.value = "";
+
+    }
+
+});
 
                 showToast("Unit berhasil dihapus.");
 
@@ -1739,6 +1801,31 @@ async function keluarkanUnit(id){
             renderUnitTable();
 
             populateNomorNBSelect();
+            const kNomorNB = document.getElementById("kNomorNB");
+
+kNomorNB.addEventListener("change", function(){
+
+    const manual = document.getElementById("kNomorNBManual");
+
+    if(this.value === "__manual__"){
+
+        manual.style.display = "block";
+
+        manual.required = true;
+
+        manual.focus();
+
+    }else{
+
+        manual.style.display = "none";
+
+        manual.required = false;
+
+        manual.value = "";
+
+    }
+
+});
 
             closeModal();
 
@@ -1821,6 +1908,31 @@ async function editUnit(id){
 
             renderUnitTable();
             populateNomorNBSelect();
+            const kNomorNB = document.getElementById("kNomorNB");
+
+kNomorNB.addEventListener("change", function(){
+
+    const manual = document.getElementById("kNomorNBManual");
+
+    if(this.value === "__manual__"){
+
+        manual.style.display = "block";
+
+        manual.required = true;
+
+        manual.focus();
+
+    }else{
+
+        manual.style.display = "none";
+
+        manual.required = false;
+
+        manual.value = "";
+
+    }
+
+});
 
             closeModal();
 
@@ -1904,6 +2016,31 @@ try{
     renderUnitTable();
 
     populateNomorNBSelect();
+    const kNomorNB = document.getElementById("kNomorNB");
+
+kNomorNB.addEventListener("change", function(){
+
+    const manual = document.getElementById("kNomorNBManual");
+
+    if(this.value === "__manual__"){
+
+        manual.style.display = "block";
+
+        manual.required = true;
+
+        manual.focus();
+
+    }else{
+
+        manual.style.display = "none";
+
+        manual.required = false;
+
+        manual.value = "";
+
+    }
+
+});
 
     showToast("Unit berhasil ditambahkan.");
 
