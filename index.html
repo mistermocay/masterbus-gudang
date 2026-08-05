@@ -795,53 +795,17 @@ transform:scale(1);
     // seluruh kode JavaScript yang sekarang
 </script>
 <script>
-let editMode = false;
-let editKodeBarang = null;
+async function hapusBarang(kode){
 
-function editBarang(kode) {
+    const barang = state.masterBarang.find(b => b.kode == kode);
 
-    const barang = state.masterBarang.find(b => b.kode === kode);
+    if(!barang) return;
 
-    if (!barang) {
-        showToast("Data barang tidak ditemukan", "error");
-        return;
-    }
+    if(!confirm(`Hapus barang "${barang.nama}" ?`)) return;
 
-    editMode = true;
-    editKodeBarang = kode;
+    await deleteCollection("master_barang", barang.id);
 
-    document.getElementById("modalBarangTitle").textContent = "Edit Barang";
-
-    document.getElementById("barangKode").value = barang.kode;
-    document.getElementById("barangNama").value = barang.nama;
-    document.getElementById("barangKategori").value = barang.kategori;
-    document.getElementById("barangLokasi").value = barang.lokasi;
-    document.getElementById("barangStok").value = barang.stok;
-    document.getElementById("barangSatuan").value = barang.satuan;
-    document.getElementById("barangStatus").value = barang.status;
-
-    document.getElementById("barangKode").disabled = true;
-
-    openModal("modalBarang");
-
-}
-
-async function hapusBarang(kode) {
-
-    const barang = state.masterBarang.find(b => b.kode === kode);
-
-    if (!barang) return;
-
-    const yakin = confirm(
-        `Yakin ingin menghapus barang "${barang.nama}" ?`
-    );
-
-    if (!yakin) return;
-
-    state.masterBarang =
-        state.masterBarang.filter(b => b.kode !== kode);
-
-    await saveMasterBarang();
+    state.masterBarang = await loadCollection("master_barang");
 
     renderBarangTable();
     renderDashboard();
@@ -1840,14 +1804,14 @@ async function tambahBarang(){
 
             await addCollection("master_barang", barang);
 
-            state.masterBarang = await loadCollection("master_barang");
+          state.masterBarang = await loadCollection("master_barang");
 
-            renderBarangTable();
-            renderDashboard();
+          renderBarangTable();
+          renderDashboard();
 
-            closeModal();
+          closeModal();
 
-            showToast("Barang berhasil ditambahkan.");
+          showToast("Barang berhasil ditambahkan.");
 
         }
 
