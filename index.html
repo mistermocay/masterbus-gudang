@@ -1242,6 +1242,11 @@ document.getElementById('formMasuk').addEventListener('submit', async function(e
   if(!item){ showToast('Pilih kode barang terlebih dahulu.', true); return; }
   const qty = parseFloat(document.getElementById('mQty').value);
   if(!qty || qty<=0){ showToast('Qty harus lebih dari 0.', true); return; }
+    finally{
+
+    hideLoading();
+
+  }
 
   const tx = {
     id: uid(),
@@ -1253,11 +1258,6 @@ document.getElementById('formMasuk').addEventListener('submit', async function(e
     keterangan: document.getElementById('mKet').value.trim(),
     createdAt: Date.now()
   };
-  finally{
-
-    hideLoading();
-
-  }
   // Simpan transaksi barang masuk
 await addCollection("barang_masuk", tx);
 
