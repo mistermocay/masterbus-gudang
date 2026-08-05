@@ -1258,17 +1258,6 @@ document.getElementById('formMasuk').addEventListener('submit', async function(e
     }
 
     const tx = {
-      id: uid(),
-      tanggal: document.getElementById('mTanggal').value,
-      kode_barang: item.kode,
-      nama_barang: item.nama,
-      qty: qty,
-      satuan: item.satuan,
-      keterangan: document.getElementById('mKet').value.trim(),
-      createdAt: Date.now()
-    };
-
-    const tx = {
     id: uid(),
     tanggal: document.getElementById('mTanggal').value,
     kode_barang: item.kode,
