@@ -1806,33 +1806,71 @@ async function editBarang(kode){
 
     const barang = state.masterBarang.find(b => b.kode == kode);
 
-    if(!barang) return;
+    if(!barang){
+        showToast("Barang tidak ditemukan.", true);
+        return;
+    }
 
     openModal(
+
         "Edit Barang",
+
         `
-        <!-- isi form -->
-        `
+        <label>Kode Barang</label>
+        <input id="eKode" value="${barang.kode}" readonly>
+
+        <label>Nama Barang</label>
+        <input id="eNama" value="${barang.nama || ''}">
+
+        <label>Kategori</label>
+        <input id="eKategori" value="${barang.kategori || ''}">
+
+        <label>Lokasi</label>
+        <input id="eLokasi" value="${barang.lokasi || ''}">
+
+        <label>Satuan</label>
+        <input id="eSatuan" value="${barang.satuan || ''}">
+
+        <label>Stok Berjalan</label>
+        <input
+            type="number"
+            id="eStok"
+            value="${Number(barang.stok_berjalan || 0)}">
+
+        <label>Stok Minimum</label>
+        <input
+            type="number"
+            id="eMinimum"
+            value="${Number(barang.stok_minimum || 0)}">
+        `,
+
+        async ()=>{
+
+            barang.nama = document.getElementById("eNama").value.trim();
+            barang.kategori = document.getElementById("eKategori").value.trim();
+            barang.lokasi = document.getElementById("eLokasi").value.trim();
+            barang.satuan = document.getElementById("eSatuan").value.trim();
+            barang.stok_berjalan = Number(document.getElementById("eStok").value);
+            barang.stok_minimum = Number(document.getElementById("eMinimum").value);
+
+            await updateCollection(
+                "master_barang",
+                barang.id,
+                barang
+            );
+
+            state.masterBarang = await loadCollection("master_barang");
+
+            renderBarangTable();
+            renderDashboard();
+
+            closeModal();
+
+            showToast("Barang berhasil diperbarui.");
+
+        }
+
     );
-
-    document.getElementById("modalSaveBtn").onclick = async () => {
-
-        barang.nama = document.getElementById("eNama").value;
-        barang.kategori = document.getElementById("eKategori").value;
-        barang.lokasi = document.getElementById("eLokasi").value;
-        barang.satuan = document.getElementById("eSatuan").value;
-
-        await updateCollection("master_barang", barang.id, barang);
-
-        state.masterBarang = await loadCollection("master_barang");
-
-        renderBarangTable();
-        renderDashboard();
-
-        closeModal();
-
-        showToast("Barang berhasil diperbarui");
-    };
 
 }
 </script>
