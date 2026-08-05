@@ -795,6 +795,116 @@ transform:scale(1);
     // seluruh kode JavaScript yang sekarang
 </script>
 <script>
+let editMode = false;
+let editKodeBarang = null;
+
+function editBarang(kode) {
+
+    const barang = state.masterBarang.find(b => b.kode === kode);
+
+    if (!barang) {
+        showToast("Data barang tidak ditemukan", "error");
+        return;
+    }
+
+    editMode = true;
+    editKodeBarang = kode;
+
+    document.getElementById("modalBarangTitle").textContent = "Edit Barang";
+
+    document.getElementById("barangKode").value = barang.kode;
+    document.getElementById("barangNama").value = barang.nama;
+    document.getElementById("barangKategori").value = barang.kategori;
+    document.getElementById("barangLokasi").value = barang.lokasi;
+    document.getElementById("barangStok").value = barang.stok;
+    document.getElementById("barangSatuan").value = barang.satuan;
+    document.getElementById("barangStatus").value = barang.status;
+
+    document.getElementById("barangKode").disabled = true;
+
+    openModal("modalBarang");
+
+}
+
+async function hapusBarang(kode) {
+
+    const barang = state.masterBarang.find(b => b.kode === kode);
+
+    if (!barang) return;
+
+    const yakin = confirm(
+        `Yakin ingin menghapus barang "${barang.nama}" ?`
+    );
+
+    if (!yakin) return;
+
+    state.masterBarang =
+        state.masterBarang.filter(b => b.kode !== kode);
+
+    await saveMasterBarang();
+
+    renderBarangTable();
+    renderDashboard();
+
+    showToast("Barang berhasil dihapus");
+
+}
+
+editMode = false;
+editKodeBarang = null;
+
+document.getElementById("modalBarangTitle").textContent = "Tambah Barang";
+
+document.getElementById("barangKode").disabled = false;
+
+document.getElementById("formBarang").reset();
+
+async function simpanBarang(){
+
+    const barang = {
+        kode: document.getElementById("barangKode").value.trim(),
+        nama: document.getElementById("barangNama").value.trim(),
+        kategori: document.getElementById("barangKategori").value.trim(),
+        lokasi: document.getElementById("barangLokasi").value.trim(),
+        stok: Number(document.getElementById("barangStok").value),
+        satuan: document.getElementById("barangSatuan").value.trim(),
+        status: document.getElementById("barangStatus").value
+    };
+
+    if(editMode){
+
+        const index = state.masterBarang.findIndex(
+            b => b.kode === editKodeBarang
+        );
+
+        if(index !== -1){
+
+            state.masterBarang[index] = barang;
+
+        }
+
+    }else{
+
+        state.masterBarang.push(barang);
+
+    }
+
+    await saveMasterBarang();
+
+    renderBarangTable();
+
+    renderDashboard();
+
+    closeModal("modalBarang");
+
+    showToast(
+        editMode
+            ? "Barang berhasil diperbarui"
+            : "Barang berhasil ditambahkan"
+    );
+
+}
+
 async function loadCollection(name){
     const snap = await window.getDocs(
         window.collection(window.db, name)
