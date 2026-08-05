@@ -248,6 +248,14 @@
     .sidebar{ position:fixed; z-index:50; transform:translateX(-100%); transition:.2s; }
     .sidebar.open{ transform:translateX(0); }
   }
+  .ts-wrapper.single .ts-control{
+    height:52px;
+    border-radius:12px;
+}
+
+.ts-dropdown{
+    border-radius:12px;
+}
 
   /* ===========================
    MODAL
@@ -1038,11 +1046,42 @@ function populateKodeSelect(selectEl){
 
     // Aktifkan fitur search
     new TomSelect(selectEl,{
-        create:false,
-        maxItems:1,
-        searchField:["text","value"],
-        placeholder:"Cari kode atau nama barang..."
-    });
+
+    create:false,
+
+    maxItems:1,
+
+    searchField:["text","value"],
+
+    placeholder:"Cari kode atau nama barang...",
+
+    hidePlaceholder:true,
+
+    closeAfterSelect:true,
+
+    allowEmptyOption:true,
+
+    render:{
+        option:function(data,escape){
+
+            return `
+                <div class="barang-option">
+
+                    <div class="kode">
+                        ${escape(data.value)}
+                    </div>
+
+                    <div class="nama">
+                        ${escape(data.text)}
+                    </div>
+
+                </div>
+            `;
+
+        }
+    }
+
+});
 
 }
 
