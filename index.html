@@ -1232,32 +1232,65 @@ function hideLoading(){
 }
 
 document.getElementById('formMasuk').addEventListener('submit', async function(e){
+
   e.preventDefault();
+
   showLoading(
     "Menyimpan Barang Masuk",
     "Sedang menyimpan transaksi..."
   );
-  const kode = document.getElementById('mKode').value;
-  const item = findItem(kode);
-  if(!item){ showToast('Pilih kode barang terlebih dahulu.', true); return; }
-  const qty = parseFloat(document.getElementById('mQty').value);
-  if(!qty || qty<=0){ showToast('Qty harus lebih dari 0.', true); return; }
-    finally{
+
+  try{
+
+    const kode = document.getElementById('mKode').value;
+    const item = findItem(kode);
+
+    if(!item){
+      showToast('Pilih kode barang terlebih dahulu.', true);
+      return;
+    }
+
+    const qty = parseFloat(document.getElementById('mQty').value);
+
+    if(!qty || qty<=0){
+      showToast('Qty harus lebih dari 0.', true);
+      return;
+    }
+
+    const tx = {
+      id: uid(),
+      tanggal: document.getElementById('mTanggal').value,
+      kode_barang: item.kode,
+      nama_barang: item.nama,
+      qty: qty,
+      satuan: item.satuan,
+      keterangan: document.getElementById('mKet').value.trim(),
+      createdAt: Date.now()
+    };
+
+    // ==========================
+    // SEMUA KODE YANG SUDAH ADA
+    // mulai dari:
+    //
+    // state.barangMasuk.push(tx);
+    // item.stok_berjalan += qty;
+    // await addCollection(...);
+    // dst...
+    // ==========================
+
+  }catch(err){
+
+    console.error(err);
+
+    showToast("Gagal menyimpan barang masuk.", true);
+
+  }finally{
 
     hideLoading();
 
   }
 
-  const tx = {
-    id: uid(),
-    tanggal: document.getElementById('mTanggal').value,
-    kode_barang: item.kode,
-    nama_barang: item.nama,
-    qty: qty,
-    satuan: item.satuan,
-    keterangan: document.getElementById('mKet').value.trim(),
-    createdAt: Date.now()
-  };
+});
   // Simpan transaksi barang masuk
 await addCollection("barang_masuk", tx);
 
