@@ -797,20 +797,52 @@ transform:scale(1);
 <script>
 async function hapusBarang(kode){
 
-    const barang = state.masterBarang.find(b => b.kode == kode);
+    const barang = state.masterBarang.find(
+        b => b.kode == kode
+    );
 
     if(!barang) return;
 
-    if(!confirm(`Hapus barang "${barang.nama}" ?`)) return;
+    openModal(
 
-    await deleteCollection("master_barang", barang.id);
+        "Konfirmasi Hapus",
 
-    state.masterBarang = await loadCollection("master_barang");
+        `
+        <div style="text-align:center;padding:20px">
 
-    renderBarangTable();
-    renderDashboard();
+            <div style="font-size:60px">🗑️</div>
 
-    showToast("Barang berhasil dihapus");
+            <h3>Hapus Barang?</h3>
+
+            <p>
+                Yakin ingin menghapus
+                <br>
+                <b>${barang.nama}</b> ?
+            </p>
+
+        </div>
+        `,
+
+        async ()=>{
+
+            await deleteCollection(
+                "master_barang",
+                barang.id
+            );
+
+            state.masterBarang =
+                await loadCollection("master_barang");
+
+            renderBarangTable();
+            renderDashboard();
+
+            closeModal();
+
+            showToast("Barang berhasil dihapus");
+
+        }
+
+    );
 
 }
 
