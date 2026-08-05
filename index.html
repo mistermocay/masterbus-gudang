@@ -1233,6 +1233,10 @@ function hideLoading(){
 
 document.getElementById('formMasuk').addEventListener('submit', async function(e){
   e.preventDefault();
+  showLoading(
+    "Menyimpan Barang Masuk",
+    "Sedang menyimpan transaksi..."
+  );
   const kode = document.getElementById('mKode').value;
   const item = findItem(kode);
   if(!item){ showToast('Pilih kode barang terlebih dahulu.', true); return; }
@@ -1249,6 +1253,11 @@ document.getElementById('formMasuk').addEventListener('submit', async function(e
     keterangan: document.getElementById('mKet').value.trim(),
     createdAt: Date.now()
   };
+  finally{
+
+    hideLoading();
+
+  }
   // Simpan transaksi barang masuk
 await addCollection("barang_masuk", tx);
 
@@ -1345,6 +1354,10 @@ function resetKeluarForm(){
 
 document.getElementById('formKeluar').addEventListener('submit', async function(e){
   e.preventDefault();
+  showLoading(
+    "Menyimpan Barang Masuk",
+    "Sedang menyimpan transaksi..."
+  );
   const kode = document.getElementById('kKode').value;
   const item = findItem(kode);
   if(!item){ showToast('Pilih kode barang terlebih dahulu.', true); return; }
@@ -1383,6 +1396,11 @@ await updateCollection(
     item.id,
     item
 );
+finally{
+
+    hideLoading();
+
+}
 
 // Reload dari Firestore
 state.barangKeluar = await loadCollection("barang_keluar");
@@ -1816,17 +1834,36 @@ async function tambahUnit(){
 
             }
 
-            await addCollection("unit_masuk", unit);
-
-            state.unitMasuk = await loadCollection("unit_masuk");
-
-            renderUnitTable();
-
-            populateNomorNBSelect();
-
             closeModal();
 
-            showToast("Unit berhasil ditambahkan.");
+showLoading(
+    "Menyimpan Unit",
+    "Sedang menyimpan data unit..."
+);
+
+try{
+
+    await addCollection("unit_masuk", unit);
+
+    state.unitMasuk = await loadCollection("unit_masuk");
+
+    renderUnitTable();
+
+    populateNomorNBSelect();
+
+    showToast("Unit berhasil ditambahkan.");
+
+}catch(err){
+
+    console.error(err);
+
+    showToast("Gagal menyimpan unit.", true);
+
+}finally{
+
+    hideLoading();
+
+}
 
         }
 
@@ -1935,20 +1972,36 @@ async function tambahBarang(){
 
             };
 
-            await addCollection("master_barang", barang);
+            closeModal();
 
-          state.masterBarang = await loadCollection("master_barang");
+            showLoading(
+                "Menyimpan Barang",
+                "Sedang menyimpan data..."
+            );
 
-          renderBarangTable();
-          renderDashboard();
+            try{
 
-          closeModal();
+                await addCollection("master_barang", barang);
 
-          showToast("Barang berhasil ditambahkan.");
+                state.masterBarang = await loadCollection("master_barang");
 
-        }
+                renderBarangTable();
 
-    );
+                renderDashboard();
+
+                showToast("Barang berhasil ditambahkan.");
+
+            }catch(err){
+
+                console.error(err);
+
+                showToast("Gagal menyimpan barang.", true);
+
+            }finally{
+
+                hideLoading();
+
+            }
 
     const nextKode =
         state.masterBarang.length
