@@ -1327,107 +1327,123 @@ function renderKeluarTable(filter=''){
       <td class="muted">${t.keperluan||'-'}</td>
     </tr>`).join('') : `<tr class="empty-row"><td colspan="8">Belum ada riwayat barang keluar.</td></tr>`;
 }
-document.getElementById('searchKeluar').addEventListener('input', e=> renderKeluarTable(e.target.value));
-
-document.getElementById('kKode').addEventListener('change', function(){
-  const item = findItem(this.value);
-  document.getElementById('kNama').value = item ? item.nama : '';
-  document.getElementById('kStokTersedia').value = item ? `${fmtNum(item.stok_berjalan)} ${item.satuan||''}` : '';
-  updateKeluarPreview();
-});
-document.getElementById('kQty').addEventListener('input', updateKeluarPreview);
-function updateKeluarPreview(){
-  const item = findItem(document.getElementById('kKode').value);
-  const qty = parseFloat(document.getElementById('kQty').value)||0;
-  const box = document.getElementById('kStokPreview');
-  if(!item){ box.textContent=''; return; }
-  const sisa = (Number(item.stok_berjalan)||0) - qty;
-  box.innerHTML = sisa < 0
-    ? `<span style="color:var(--red)">⚠ Stok akan minus (sisa ${fmtNum(sisa)}). Periksa kembali sebelum menyimpan.</span>`
-    : `Sisa stok setelah transaksi: ${fmtNum(sisa)} ${item.satuan||''}`;
-}
-
-document.getElementById('kNomorNB').addEventListener('change', function(){
-  document.getElementById('kManualWrap').style.display = this.value==='__manual__' ? 'block' : 'none';
-});
-
-function resetKeluarForm(){
-  document.getElementById('formKeluar').reset();
-  document.getElementById('kTanggal').value = todayISO();
-  document.getElementById('kNama').value=''; document.getElementById('kStokTersedia').value='';
-  document.getElementById('kStokPreview').textContent='';
-  document.getElementById('kManualWrap').style.display='none';
-}
-
 document.getElementById('formKeluar').addEventListener('submit', async function(e){
-  e.preventDefault();
-  showLoading(
-    "Menyimpan Barang Masuk",
-    "Sedang menyimpan transaksi..."
-  );
-  const kode = document.getElementById('kKode').value;
-  const item = findItem(kode);
-  if(!item){ showToast('Pilih kode barang terlebih dahulu.', true); return; }
-  const qty = parseFloat(document.getElementById('kQty').value);
-  if(!qty || qty<=0){ showToast('Qty harus lebih dari 0.', true); return; }
 
-  let nbSel = document.getElementById('kNomorNB').value;
-  if(!nbSel){ showToast('Nomor NB wajib dipilih — barang keluar harus terhubung ke unit.', true); return; }
-  let nomorNB = nbSel;
-  if(nbSel === '__manual__'){
-    const manual = document.getElementById('kNomorNBManual').value.trim();
-    if(!manual){ showToast('Isi keterangan unit manual (mis. GAWI 0668).', true); return; }
-    nomorNB = manual;
-  }
+    e.preventDefault();
 
-  const tx = {
-    id: uid(),
-    tanggal: document.getElementById('kTanggal').value,
-    kode_barang: item.kode,
-    nama_barang: item.nama,
-    qty: qty,
-    satuan: item.satuan,
-    diambil_oleh: document.getElementById('kDiambil').value.trim(),
-    divisi: document.getElementById('kDivisi').value.trim(),
-    nomor_nb: nomorNB,
-    keperluan: document.getElementById('kKeperluan').value.trim(),
-    createdAt: Date.now()
-  };
-  await addCollection("barang_keluar", tx);
+    showLoading(
+        "Menyimpan Barang Keluar",
+        "Sedang menyimpan transaksi..."
+    );
 
-item.stok_berjalan =
-    (Number(item.stok_berjalan) || 0) - qty;
+    try{
 
-await updateCollection(
-    "master_barang",
-    item.id,
-    item
-);
+        const kode = document.getElementById('kKode').value;
+        const item = findItem(kode);
 
-// Reload dari Firestore
-state.barangKeluar = await loadCollection("barang_keluar");
-state.masterBarang = await loadCollection("master_barang");
+        if(!item){
+            showToast('Pilih kode barang terlebih dahulu.', true);
+            return;
+        }
 
-showToast(
-    `Barang keluar tersimpan: -${fmtNum(qty)} ${item.satuan || ''} ${item.nama} → ${nomorNB}`
-);
+        const qty = parseFloat(document.getElementById('kQty').value);
 
-resetKeluarForm();
+        if(!qty || qty<=0){
+            showToast('Qty harus lebih dari 0.', true);
+            return;
+        }
 
-renderKeluarTable();
-renderBarangTable();
-renderDashboard();
-}catch(err){
+        let nbSel = document.getElementById('kNomorNB').value;
 
-    console.error(err);
+        if(!nbSel){
+            showToast('Nomor NB wajib dipilih — barang keluar harus terhubung ke unit.', true);
+            return;
+        }
 
-    showToast("Gagal menyimpan barang keluar.", true);
+        let nomorNB = nbSel;
 
-}finally{
+        if(nbSel === "__manual__"){
 
-    hideLoading();
+            const manual = document.getElementById('kNomorNBManual').value.trim();
 
-}
+            if(!manual){
+                showToast('Isi keterangan unit manual (mis. GAWI 0668).', true);
+                return;
+            }
+
+            nomorNB = manual;
+
+        }
+
+        const tx = {
+
+            id: uid(),
+
+            tanggal: document.getElementById('kTanggal').value,
+
+            kode_barang: item.kode,
+
+            nama_barang: item.nama,
+
+            qty: qty,
+
+            satuan: item.satuan,
+
+            diambil_oleh: document.getElementById('kDiambil').value.trim(),
+
+            divisi: document.getElementById('kDivisi').value.trim(),
+
+            nomor_nb: nomorNB,
+
+            keperluan: document.getElementById('kKeperluan').value.trim(),
+
+            createdAt: Date.now()
+
+        };
+
+        // Simpan transaksi barang keluar
+        await addCollection("barang_keluar", tx);
+
+        // Update stok
+        item.stok_berjalan =
+            (Number(item.stok_berjalan) || 0) - qty;
+
+        await updateCollection(
+            "master_barang",
+            item.id,
+            item
+        );
+
+        // Reload data
+        state.barangKeluar =
+            await loadCollection("barang_keluar");
+
+        state.masterBarang =
+            await loadCollection("master_barang");
+
+        showToast(
+            `Barang keluar tersimpan: -${fmtNum(qty)} ${item.satuan || ''} ${item.nama} → ${nomorNB}`
+        );
+
+        resetKeluarForm();
+
+        renderKeluarTable();
+        renderBarangTable();
+        renderDashboard();
+        renderPesanPage();
+
+    }catch(err){
+
+        console.error(err);
+
+        showToast("Gagal menyimpan barang keluar.", true);
+
+    }finally{
+
+        hideLoading();
+
+    }
+
 });
 
 /* =========================================================
