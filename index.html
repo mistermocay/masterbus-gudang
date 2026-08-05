@@ -1268,6 +1268,17 @@ document.getElementById('formMasuk').addEventListener('submit', async function(e
       createdAt: Date.now()
     };
 
+    const tx = {
+    id: uid(),
+    tanggal: document.getElementById('mTanggal').value,
+    kode_barang: item.kode,
+    nama_barang: item.nama,
+    qty: qty,
+    satuan: item.satuan,
+    keterangan: document.getElementById('mKet').value.trim(),
+    createdAt: Date.now()
+  };
+
     // ==========================
     // SEMUA KODE YANG SUDAH ADA
     // mulai dari:
@@ -1291,32 +1302,6 @@ document.getElementById('formMasuk').addEventListener('submit', async function(e
   }
 
 });
-  // Simpan transaksi barang masuk
-await addCollection("barang_masuk", tx);
-
-// Update stok barang
-item.stok_berjalan = (Number(item.stok_berjalan) || 0) + qty;
-
-// Simpan perubahan stok master barang
-await updateCollection(
-    "master_barang",
-    item.id,
-    item
-);
-
-// Reload data dari Firestore
-state.barangMasuk = await loadCollection("barang_masuk");
-state.masterBarang = await loadCollection("master_barang");
-
-showToast(`Barang masuk tersimpan: +${fmtNum(qty)} ${item.satuan || ''} ${item.nama}`);
-
-resetMasukForm();
-renderDashboard();
-renderMasukTable();
-renderBarangTable();
-renderPesanPage();
-});
-
 /* =========================================================
    RENDER: BARANG KELUAR
    ========================================================= */
