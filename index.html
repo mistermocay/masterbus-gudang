@@ -1951,12 +1951,18 @@ window.addEventListener("DOMContentLoaded", () => {
 });
 async function tambahBarang(){
 
+    const nextKode =
+        state.masterBarang.length
+        ? Math.max(...state.masterBarang.map(i => Number(i.kode) || 0)) + 1
+        : 1;
+
     openModal(
+
         "Tambah Barang",
 
         `
         <label>Kode Barang</label>
-        <input id="bKode" readonly>
+        <input id="bKode" readonly value="${nextKode}">
 
         <label>Nama Barang</label>
         <input id="bNama">
@@ -1981,23 +1987,23 @@ async function tambahBarang(){
 
             const stokAwal = Number(document.getElementById("bStok").value);
 
-            const barang={
+            const barang = {
 
-                kode:document.getElementById("bKode").value,
+                kode: document.getElementById("bKode").value,
 
-                nama:document.getElementById("bNama").value.trim(),
+                nama: document.getElementById("bNama").value.trim(),
 
-                kategori:document.getElementById("bKategori").value.trim(),
+                kategori: document.getElementById("bKategori").value.trim(),
 
-                lokasi:document.getElementById("bLokasi").value.trim(),
+                lokasi: document.getElementById("bLokasi").value.trim(),
 
-                satuan:document.getElementById("bSatuan").value.trim(),
+                satuan: document.getElementById("bSatuan").value.trim(),
 
-                stok_awal:stokAwal,
+                stok_awal: stokAwal,
 
-                stok_berjalan:stokAwal,
+                stok_berjalan: stokAwal,
 
-                stok_minimum:Number(document.getElementById("bMinimum").value)
+                stok_minimum: Number(document.getElementById("bMinimum").value)
 
             };
 
@@ -2032,12 +2038,9 @@ async function tambahBarang(){
 
             }
 
-    const nextKode =
-        state.masterBarang.length
-        ? Math.max(...state.masterBarang.map(i=>Number(i.kode)||0))+1
-        :1;
+        }
 
-    document.getElementById("bKode").value = nextKode;
+    );
 
 }
 async function editBarang(kode){
