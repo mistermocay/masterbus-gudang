@@ -1770,6 +1770,39 @@ async function tambahBarang(){
     document.getElementById("bKode").value = nextKode;
 
 }
+async function editBarang(kode){
+
+    const barang = state.masterBarang.find(b => b.kode == kode);
+
+    if(!barang) return;
+
+    openModal(
+        "Edit Barang",
+        `
+        <!-- isi form -->
+        `
+    );
+
+    document.getElementById("modalSaveBtn").onclick = async () => {
+
+        barang.nama = document.getElementById("eNama").value;
+        barang.kategori = document.getElementById("eKategori").value;
+        barang.lokasi = document.getElementById("eLokasi").value;
+        barang.satuan = document.getElementById("eSatuan").value;
+
+        await updateCollection("master_barang", barang.id, barang);
+
+        state.masterBarang = await loadCollection("master_barang");
+
+        renderBarangTable();
+        renderDashboard();
+
+        closeModal();
+
+        showToast("Barang berhasil diperbarui");
+    };
+
+}
 </script>
 <script type="module" src="./firebase.js"></script>
 
