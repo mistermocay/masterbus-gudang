@@ -1403,11 +1403,6 @@ await updateCollection(
     item.id,
     item
 );
-finally{
-
-    hideLoading();
-
-}
 
 // Reload dari Firestore
 state.barangKeluar = await loadCollection("barang_keluar");
@@ -1422,6 +1417,17 @@ resetKeluarForm();
 renderKeluarTable();
 renderBarangTable();
 renderDashboard();
+}catch(err){
+
+    console.error(err);
+
+    showToast("Gagal menyimpan barang keluar.", true);
+
+}finally{
+
+    hideLoading();
+
+}
 });
 
 /* =========================================================
