@@ -1034,8 +1034,11 @@ function fmtDate(d){ if(!d) return '-'; const dt = new Date(d); if(isNaN(dt)) re
 function todayISO(){ return new Date().toISOString().slice(0,10); }
 function uid(){ return 'tx_'+Date.now()+'_'+Math.random().toString(36).slice(2,8); }
 function itemStatus(item){
-  const threshold = (item.stok_min===null||item.stok_min===undefined) ? 0 : item.stok_min;
-  return item.stok_berjalan <= threshold ? 'PESAN' : 'AMAN';
+  const threshold = Number(
+    item.stok_minimum ?? item.stok_min ?? 0
+  );
+  const stok = Number(item.stok_berjalan ?? 0);
+  return stok < threshold ? 'PESAN' : 'AMAN';
 }
 function findItem(kode){ return state.masterBarang.find(i=>i.kode==kode); }
 function showToast(msg, isErr){
