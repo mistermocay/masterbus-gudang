@@ -1650,7 +1650,7 @@ function renderPesanPage(){
       <td class="muted">${i.kategori||'-'}</td>
       <td class="muted">${i.lokasi||'-'}</td>
       <td class="right mono" style="color:var(--red)">${fmtNum(i.stok_berjalan)}</td>
-      <td class="right mono muted">${i.stok_min===null||i.stok_min===undefined ? '0' : fmtNum(i.stok_min)}</td>
+      <td class="right mono muted">${fmtNum(i.stok_minimum ?? i.stok_min ?? 0)}</td>
     </tr>`).join('') : `<tr class="empty-row"><td colspan="6">Tidak ada barang yang perlu dipesan saat ini ✓</td></tr>`;
 }
 
