@@ -1268,48 +1268,69 @@ function renderDashboard(){
    RENDER: BARANG MASUK
    ========================================================= */
 function populateKodeSelect(selectEl){
-  selectEl.innerHTML = '<option value="">— pilih kode barang —</option>' +
-    state.masterBarang.slice().sort((a,b)=> a.nama.localeCompare(b.nama))
-      .map(i=> `<option value="${i.kode}">${i.kode} — ${i.nama}</option>`).join('');
-}
+
+    selectEl.innerHTML =
+        '<option value="">— pilih kode barang —</option>' +
+
+        state.masterBarang
+            .slice()
+            .sort((a,b) =>
+                String(a.nama || '').localeCompare(
+                    String(b.nama || '')
+                )
+            )
+            .map(i =>
+                `<option value="${i.kode}">
+                    ${i.kode} — ${i.nama}
+                </option>`
+            )
+            .join('');
+
+    // Hancurkan TomSelect lama jika sudah pernah dibuat
+    if(selectEl.tomselect){
+        selectEl.tomselect.destroy();
+    }
+
     // Aktifkan fitur search
     new TomSelect(selectEl,{
 
-    create:false,
+        create:false,
 
-    maxItems:1,
+        maxItems:1,
 
-    searchField:["text","value"],
+        searchField:["text","value"],
 
-    placeholder:"Cari kode atau nama barang...",
+        placeholder:"Cari kode atau nama barang...",
 
-    hidePlaceholder:true,
+        hidePlaceholder:true,
 
-    closeAfterSelect:true,
+        closeAfterSelect:true,
 
-    allowEmptyOption:true,
+        allowEmptyOption:true,
 
-    render:{
-        option:function(data,escape){
+        render:{
 
-            return `
-                <div class="barang-option">
+            option:function(data,escape){
 
-                    <div class="kode">
-                        ${escape(data.value)}
+                return `
+                    <div class="barang-option">
+
+                        <div class="kode">
+                            ${escape(data.value)}
+                        </div>
+
+                        <div class="nama">
+                            ${escape(data.text)}
+                        </div>
+
                     </div>
+                `;
 
-                    <div class="nama">
-                        ${escape(data.text)}
-                  </div>
-
-                </div>
-            `;
+            }
 
         }
-    }
 
-});
+    });
 
 }
 
