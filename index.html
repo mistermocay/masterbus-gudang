@@ -1174,11 +1174,17 @@ function fmtDate(d){ if(!d) return '-'; const dt = new Date(d); if(isNaN(dt)) re
 function todayISO(){ return new Date().toISOString().slice(0,10); }
 function uid(){ return 'tx_'+Date.now()+'_'+Math.random().toString(36).slice(2,8); }
 function itemStatus(item){
-  const threshold = Number(
-    item.stok_minimum ?? item.stok_min ?? 0
-  );
-  const stok = Number(item.stok_berjalan ?? 0);
-  return stok < threshold ? 'PESAN' : 'AMAN';
+    const threshold = Number(
+        item.stok_minimum ??
+        item.stok_min ??
+        0
+    );
+    const stok = Number(
+        item.stok_berjalan ?? 0
+    );
+    return stok < threshold
+        ? 'PESAN'
+        : 'AMAN';
 }
 function findItem(kode){ return state.masterBarang.find(i=>i.kode==kode); }
 function showToast(msg, isErr){
@@ -1452,7 +1458,112 @@ function renderKeluarPage(){
   populateNomorNBSelect();
   renderKeluarTable();
 }
+/* =========================================================
+   AUTOCOMPLETE KODE BARANG - BARANG KELUAR
+   ========================================================= */
 
+const kKodeSearch = document.getElementById('kKodeSearch');
+const kKodeResults = document.getElementById('kKodeResults');
+const kKodeHidden = document.getElementById('kKode');
+
+kKodeSearch.addEventListener('input', function(){
+
+    const q = this.value.trim().toLowerCase();
+
+    kKodeResults.innerHTML = '';
+
+    if(!q){
+        kKodeResults.style.display = 'none';
+        kKodeHidden.value = '';
+        document.getElementById('kNama').value = '';
+        document.getElementById('kStokTersedia').value = '';
+        updateKeluarPreview();
+        return;
+    }
+
+    const results = state.masterBarang
+        .filter(item =>
+            String(item.kode || '').toLowerCase().includes(q) ||
+            String(item.nama || '').toLowerCase().includes(q)
+        )
+        .sort((a,b) =>
+            String(a.nama || '').localeCompare(
+                String(b.nama || '')
+            )
+        )
+        .slice(0, 20);
+
+    if(!results.length){
+
+        kKodeResults.innerHTML = `
+            <div class="autocomplete-empty">
+                Barang tidak ditemukan.
+            </div>
+        `;
+
+        kKodeResults.style.display = 'block';
+
+        return;
+    }
+
+    kKodeResults.innerHTML = results.map(item => `
+        <div
+            class="autocomplete-item"
+            data-kode="${item.kode}"
+        >
+            <span class="autocomplete-code">
+                ${item.kode}
+            </span>
+
+            <span class="autocomplete-name">
+                ${item.nama}
+            </span>
+        </div>
+    `).join('');
+
+    kKodeResults.style.display = 'block';
+
+});
+
+kKodeResults.addEventListener('click', function(e){
+
+    const option = e.target.closest('.autocomplete-item');
+
+    if(!option){
+        return;
+    }
+
+    const kode = option.dataset.kode;
+
+    const item = findItem(kode);
+
+    if(!item){
+        return;
+    }
+
+    kKodeHidden.value = item.kode;
+
+    kKodeSearch.value = `${item.kode} — ${item.nama}`;
+
+    kKodeResults.style.display = 'none';
+
+    document.getElementById('kNama').value =
+        item.nama || '';
+
+    document.getElementById('kStokTersedia').value =
+        `${fmtNum(item.stok_berjalan)} ${item.satuan || ''}`;
+
+    updateKeluarPreview();
+
+});
+
+document.addEventListener('click', function(e){
+
+    if(!e.target.closest('.autocomplete-wrap')){
+        kKodeResults.style.display = 'none';
+    }
+
+});
 // ===== TARUH DI SINI =====
 
 document.getElementById("kNomorNB").addEventListener("change", function(){
