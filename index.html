@@ -498,6 +498,134 @@ transform:scale(1);
     }
 
 }
+/* ================================
+   AUTOCOMPLETE BARANG KELUAR
+   ================================ */
+
+.autocomplete-wrap{
+  position:relative;
+  width:100%;
+}
+
+.autocomplete-results{
+  position:absolute;
+  top:calc(100% + 4px);
+  left:0;
+  right:0;
+  z-index:1000;
+
+  background:#f5f7fa;
+  border:1px solid #cfd6df;
+  border-radius:10px;
+
+  max-height:240px;
+  overflow-y:auto;
+
+  box-shadow:0 10px 25px rgba(0,0,0,.25);
+
+  display:none;
+}
+
+.autocomplete-item{
+  padding:10px 12px;
+  cursor:pointer;
+
+  color:#263445;
+  background:#f5f7fa;
+
+  border-bottom:1px solid #e1e5ea;
+}
+
+.autocomplete-item:last-child{
+  border-bottom:none;
+}
+
+.autocomplete-item:hover{
+  background:#e8edf3;
+}
+
+.autocomplete-code{
+  font-weight:700;
+  color:#17283d;
+  margin-right:6px;
+}
+
+.autocomplete-name{
+  color:#526274;
+}
+
+.autocomplete-empty{
+  padding:12px;
+  color:#687789;
+}
+/* =========================================================
+   TOMSELECT - BARANG
+   ========================================================= */
+
+.ts-wrapper{
+    width:100%;
+}
+
+.ts-control{
+    min-height:48px !important;
+
+    background:#1d2633 !important;
+    border:1px solid #303c4c !important;
+    border-radius:8px !important;
+
+    color:#ffffff !important;
+
+    box-shadow:none !important;
+}
+
+.ts-control input{
+    color:#ffffff !important;
+}
+
+.ts-control input::placeholder{
+    color:#8b98a8 !important;
+}
+
+.ts-dropdown{
+    background:#f5f7fa !important;
+    border:1px solid #cfd6df !important;
+    border-radius:8px !important;
+
+    color:#1f2937 !important;
+
+    overflow:hidden;
+
+    box-shadow:0 10px 25px rgba(0,0,0,.25);
+}
+
+.ts-dropdown .option{
+    padding:10px 12px !important;
+
+    background:#f5f7fa !important;
+    color:#1f2937 !important;
+}
+
+.ts-dropdown .option.active{
+    background:#e4eaf1 !important;
+    color:#17283d !important;
+}
+
+.barang-option{
+    display:flex;
+    flex-direction:column;
+    gap:3px;
+}
+
+.barang-option .kode{
+    font-weight:700;
+    color:#17283d;
+    font-size:14px;
+}
+
+.barang-option .nama{
+    color:#586779;
+    font-size:13px;
+}
 </style>
 </head>
 <body>
@@ -677,10 +805,22 @@ transform:scale(1);
             <label>Tanggal</label>
             <input type="date" id="kTanggal" required>
           </div>
-          <div class="field">
-            <label>Kode Barang</label>
-            <select id="kKode" required></select>
+        <div class="field">
+          <label>Kode Barang</label>
+          <div class="autocomplete-wrap">
+            <input
+              type="text"
+              id="kKodeSearch"
+              placeholder="Cari kode / nama barang..."
+              autocomplete="off"
+            >
+            <input
+              type="hidden"
+              id="kKode"
+            >
+            <div id="kKodeResults" class="autocomplete-results"></div>
           </div>
+        </div>
           <div class="field span2">
             <label>Nama Barang</label>
             <input type="text" id="kNama" disabled>
@@ -1122,24 +1262,10 @@ function renderDashboard(){
    RENDER: BARANG MASUK
    ========================================================= */
 function populateKodeSelect(selectEl){
-
-    selectEl.innerHTML =
-        '<option value="">Cari kode / nama barang...</option>' +
-
-        state.masterBarang
-            .slice()
-            .sort((a,b)=>a.nama.localeCompare(b.nama))
-            .map(i => `
-                <option value="${i.kode}">
-                    ${i.kode} — ${i.nama}
-                </option>
-            `).join('');
-
-    // Hapus TomSelect lama kalau sudah ada
-    if(selectEl.tomselect){
-        selectEl.tomselect.destroy();
-    }
-
+  selectEl.innerHTML = '<option value="">— pilih kode barang —</option>' +
+    state.masterBarang.slice().sort((a,b)=> a.nama.localeCompare(b.nama))
+      .map(i=> `<option value="${i.kode}">${i.kode} — ${i.nama}</option>`).join('');
+}
     // Aktifkan fitur search
     new TomSelect(selectEl,{
 
@@ -1169,7 +1295,7 @@ function populateKodeSelect(selectEl){
 
                     <div class="nama">
                         ${escape(data.text)}
-                    </div>
+                  </div>
 
                 </div>
             `;
@@ -1316,16 +1442,15 @@ function populateNomorNBSelect(){
 }
 
 function renderKeluarPage(){
+  document.getElementById('kTanggal').value =
+    document.getElementById('kTanggal').value || todayISO();
 
-    document.getElementById('kTanggal').value =
-        document.getElementById('kTanggal').value || todayISO();
+  document.getElementById('kKode').value = '';
+  document.getElementById('kKodeSearch').value = '';
+  document.getElementById('kKodeResults').style.display = 'none';
 
-    populateKodeSelect(document.getElementById('kKode'));
-
-    populateNomorNBSelect();
-
-    renderKeluarTable();
-
+  populateNomorNBSelect();
+  renderKeluarTable();
 }
 
 // ===== TARUH DI SINI =====
@@ -1367,6 +1492,7 @@ function renderKeluarTable(filter=''){
       <td class="muted">${t.keperluan||'-'}</td>
     </tr>`).join('') : `<tr class="empty-row"><td colspan="8">Belum ada riwayat barang keluar.</td></tr>`;
 }
+
 document.getElementById('formKeluar').addEventListener('submit', async function(e){
 
     e.preventDefault();
